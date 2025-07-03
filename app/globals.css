@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  /* color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif; */
+}
+
+@layer base {
+  .breadcrumb li { @apply relative items-center flex }
+  .breadcrumb li:after { display: inline-block; content: "/"; margin: 0 8px;}
+  .breadcrumb li:last-child:after { @apply hidden}
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .responsive-grid .MuiDataGrid-columnHeaderTitle {
+      font-size: 12px; /* Reduce header font size */
+    }
+    .responsive-grid .MuiDataGrid-cell {
+      font-size: 11px; /* Reduce cell font size */
+      padding: 4px; /* Adjust padding */
+    }
+
+    /* Hide action column on small screens */
+    .responsive-grid .MuiDataGrid-cell[data-field='action'],
+    .responsive-grid .MuiDataGrid-columnHeader[data-field='action'] {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .responsive-grid .MuiDataGrid-cell {
+      font-size: 10px;
+      padding: 2px;
+    }
+  }
+
+}
+
+@layer components {
+
+}
+
+@layer utilities {
+
+}
