@@ -1,6 +1,15 @@
 /*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app/layout.tsx","import":"Geist","arguments":[{"variable":"--font-geist-sans","subsets":["latin"]}],"variableName":"geistSans"} ***!
   \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/* cyrillic */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/8d697b304b401681-s.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
 /* latin-ext */
 @font-face {
   font-family: 'Geist';
@@ -19,13 +28,22 @@
   src: url(/_next/static/media/569ce4b8f30dc480-s.p.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }@font-face {font-family: 'Geist Fallback';src: local("Arial");ascent-override: 95.94%;descent-override: 28.16%;line-gap-override: 0.00%;size-adjust: 104.76%
-}.__className_4d318d {font-family: 'Geist', 'Geist Fallback';font-style: normal
-}.__variable_4d318d {--font-geist-sans: 'Geist', 'Geist Fallback'
+}.__className_5cfdac {font-family: 'Geist', 'Geist Fallback';font-style: normal
+}.__variable_5cfdac {--font-geist-sans: 'Geist', 'Geist Fallback'
 }
 
 /*!********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app/layout.tsx","import":"Geist_Mono","arguments":[{"variable":"--font-geist-mono","subsets":["latin"]}],"variableName":"geistMono"} ***!
   \********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/* cyrillic */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(/_next/static/media/9610d9e46709d722-s.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
 /* latin-ext */
 @font-face {
   font-family: 'Geist Mono';
@@ -44,8 +62,8 @@
   src: url(/_next/static/media/93f479601ee12b01-s.p.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }@font-face {font-family: 'Geist Mono Fallback';src: local("Arial");ascent-override: 74.67%;descent-override: 21.92%;line-gap-override: 0.00%;size-adjust: 134.59%
-}.__className_ea5f4b {font-family: 'Geist Mono', 'Geist Mono Fallback';font-style: normal
-}.__variable_ea5f4b {--font-geist-mono: 'Geist Mono', 'Geist Mono Fallback'
+}.__className_9a8899 {font-family: 'Geist Mono', 'Geist Mono Fallback';font-style: normal
+}.__variable_9a8899 {--font-geist-mono: 'Geist Mono', 'Geist Mono Fallback'
 }
 
 /*!*************************************************************************************************************************************************************************************************************************************************************!*\
@@ -590,6 +608,10 @@ video {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+.-mx-2 {
+  margin-left: -2px;
+  margin-right: -2px;
+}
 .mb-1 {
   margin-bottom: 1px;
 }
@@ -632,6 +654,12 @@ video {
 .mt-8 {
   margin-top: 8px;
 }
+.mr-2 {
+  margin-right: 2px;
+}
+.mt-3 {
+  margin-top: 3px;
+}
 .flex {
   display: flex;
 }
@@ -643,6 +671,9 @@ video {
 }
 .h-6 {
   height: 6px;
+}
+.h-12 {
+  height: 12px;
 }
 .min-h-\[calc\(100\%-100px\)\] {
   min-height: calc(100% - 100px);
@@ -667,6 +698,9 @@ video {
 }
 .w-full {
   width: 100%;
+}
+.w-12 {
+  width: 12px;
 }
 .grow {
   flex-grow: 1;
@@ -728,6 +762,9 @@ video {
 .gap-8 {
   gap: 8px;
 }
+.gap-6 {
+  gap: 6px;
+}
 .overflow-x-scroll {
   overflow-x: scroll;
 }
@@ -755,6 +792,9 @@ video {
 .border-t-1 {
   border-top-width: 1px;
 }
+.border-t {
+  border-top-width: 1px;
+}
 .border-solid {
   border-style: solid;
 }
@@ -765,6 +805,10 @@ video {
 .border-gray-300 {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+.border-gray-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
 }
 .bg-\[rgba\(255\2c 255\2c 255\2c 0\.1\)\] {
   background-color: rgba(255,255,255,0.1);
@@ -844,6 +888,12 @@ video {
 .pt-4 {
   padding-top: 4px;
 }
+.pt-2 {
+  padding-top: 2px;
+}
+.pt-3 {
+  padding-top: 3px;
+}
 .text-center {
   text-align: center;
 }
@@ -863,6 +913,10 @@ video {
 .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
+}
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 .font-medium {
   font-weight: 500;
@@ -1009,5 +1063,19 @@ body {
 
   .max-md\:\!w-\[700px\] {
     width: 700px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  .md\:w-6\/12 {
+    width: 50%;
+  }
+}
+
+@media (min-width: 1200px) {
+
+  .lg\:w-3\/12 {
+    width: 25%;
   }
 }

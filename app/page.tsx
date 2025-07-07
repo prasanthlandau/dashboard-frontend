@@ -70,10 +70,12 @@ const Dashboard = () => {
     data: [340, 385, 290, 445, 398, 520],
     label: 'User Accounts Created'
   });
+  
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const fetchDashboardStats = async () => {
     try {
-      const url = `http://localhost:3001/dashboard-stats`;
+      const url = `${API_BASE_URL}/dashboard-stats`;
       const response = await axios.get(url);
       if (response.data) {
         setStats(response.data);
@@ -94,7 +96,7 @@ const Dashboard = () => {
 
   const fetchChartData = async (type: string, period: string) => {
     try {
-      const url = `http://localhost:3001/chart-data?type=${type}&period=${period}`;
+      const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
       const response = await axios.get(url);
       if (response.data) {
         setChartData({

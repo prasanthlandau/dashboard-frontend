@@ -191,12 +191,11 @@ const DataTableUsers = () => {
     },
   ], []);
 
-    const getUsers = async (curriculumId?: string) => {
+  const getUsers = async (curriculumId?: string) => {
     setIsLoading(true);
     try {
-      const url = curriculumId 
-        ? `http://localhost:3001/users?curriculum=${curriculumId}`
-        : 'http://localhost:3001/users';
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/users`;
+      const url = curriculumId ? `${baseUrl}?curriculum=${curriculumId}` : baseUrl;
       
       const response = await axios.get(url);
       if (response.data.success) {
@@ -221,9 +220,7 @@ const DataTableUsers = () => {
     }
   };
 
-
-
-useEffect(() => {
+  useEffect(() => {
     getUsers();
   }, []);
 
@@ -258,7 +255,6 @@ useEffect(() => {
     setEndDate('');
     setVisibleRows(rows);
   };
-
 
   return (
     <>
