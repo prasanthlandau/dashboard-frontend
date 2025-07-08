@@ -1,123 +1,64 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import { DataGrid, GridRowsProp, GridColDef, GridValueFormatterParams } from '@mui/x-data-grid';
+import React, { useState, useEffect, useCallback } from 'react';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Paper } from '@mui/material';
 import axios from 'axios';
-import dayjs from 'dayjs';
+import Header from './header';
+import { useCurriculum } from './curriculum-context';
 
-const DataSummary: React.FC<{ data: any[] }> = ({ data }) => {
-  const stats = useMemo(() => {
-    return data.reduce((acc, item) => {
-      acc.totalUsers++;
-      acc.totalHomeworkWT += Number(item.total_watched_lesson_duration_in_minutes) || 0;
-      acc.totalCourseWT += Number(item.total_watched_minutes_q1) || 0;
-      acc.totalWT += Number(item.total_watch_minutes) || 0;
-      return acc;
-    }, { totalUsers: 0, totalHomeworkWT: 0, totalCourseWT: 0, totalWT: 0 });
-  }, [data]);
+const DataTableWatchtime = () => {
+  const [rows, setRows] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { getCurriculumId } = useCurriculum();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    return (
-    <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
-      <div className="grid grid-cols-4 gap-4">
-        <div className="flex flex-col items-center justify-center bg-white p-4 rounded-md shadow">
-          <div className="text-gray-600 text-sm mb-1">Total Users</div>
-          <div className="text-xl font-semibold text-blue-600">{stats.totalUsers}</div>
-        </div>
-        <div className="flex flex-col items-center justify-center bg-white p-4 rounded-md shadow">
-          <div className="text-gray-600 text-sm mb-1">Total Homework WT</div>
-          <div className="text-xl font-semibold text-green-600">{Math.floor(stats.totalHomeworkWT)} Min</div>
-        </div>
-        <div className="flex flex-col items-center justify-center bg-white p-4 rounded-md shadow">
-          <div className="text-gray-600 text-sm mb-1">Total Course WT</div>
-          <div className="text-xl font-semibold text-purple-600">{Math.floor(stats.totalCourseWT)} Min</div>
-        </div>
-        <div className="flex flex-col items-center justify-center bg-white p-4 rounded-md shadow">
-          <div className="text-gray-600 text-sm mb-1">Total Watch Time</div>
-          <div className="text-xl font-semibold text-teal-600">{Math.floor(stats.totalWT)} Min</div>
-        </div>
-      </div>
-      <div className="mt-6 text-center">
-        <span className="text-gray-500 text-sm">Current Date:</span>{' '}
-        <span className="font-medium text-gray-800">
-          {dayjs().format('dddd, MMMM D, YYYY, h:mm A [IST]')}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const columns: GridColDef[] = [
-  { field: 'email', headerName: 'Email', flex: 3, headerClassName: 'data-grid-header' },
-  { field: 'profile_count', headerName: 'Profile Count', flex: 1, headerClassName: 'data-grid-header' },
-  { 
-    field: 'total_watched_minutes_q1', 
-    headerName: 'Watch Minutes (Course)', 
-    flex: 1, 
-    headerClassName: 'data-grid-header',
-    
-  },
-  { 
-    field: 'total_watched_lesson_duration_in_minutes', 
-    headerName: 'Watch Minutes (HW)', 
-    flex: 1, 
-    headerClassName: 'data-grid-header',
-    
-  },
-  { 
-    field: 'total_watch_minutes', 
-    headerName: 'Total Watch Minutes', 
-    flex: 1, 
-    headerClassName: 'data-grid-header',
-    
-  }
-];
-
-const DataTableUserComponent: React.FC = () => {
-  const [rows, setRows] = useState<GridRowsProp>([]);
-
-  const getUsers = async () => {
+  const fetchWatchtimeReport = useCallback(async (curriculumId?: string) => {
+    setIsLoading(true);
     try {
-      const response = await axios.get("http://localhost:3001/watchtime");
-      const data = response.data;
-      
-      const formattedData = data.map((item: any, index: number) => ({
-        id: index,
+      const url = `${API_BASE_URL}/watchtime${curriculumId ? `?curriculum=${curriculumId}` : ''}`;
+      const response = await axios.get(url);
+      const formattedData = response.data.map((item: any) => ({
         ...item,
+        id: item.user_id,
         total_watch_minutes: Number(((item.total_watched_minutes_q1 || 0) + (item.total_watched_lesson_duration_in_minutes || 0)).toFixed(2))
       }));
-      
       setRows(formattedData);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching watch time data:', error);
+    } finally {
+      setIsLoading(false);
     }
+  }, [API_BASE_URL]);
+  
+  useEffect(() => {
+    const curriculumId = getCurriculumId();
+    fetchWatchtimeReport(curriculumId);
+  }, [fetchWatchtimeReport, getCurriculumId]);
+
+  const handleRefresh = () => {
+    const curriculumId = getCurriculumId();
+    fetchWatchtimeReport(curriculumId);
   };
 
-  useEffect(() => {
-    getUsers();
-  }, []);
+  const columns: GridColDef[] = [
+    { field: 'email', headerName: 'Email', flex: 3 },
+    { field: 'total_watched_minutes_q1', headerName: 'Course Watch (min)', flex: 1 },
+    { field: 'total_watched_lesson_duration_in_minutes', headerName: 'Homework Watch (min)', flex: 1 },
+    { field: 'total_watch_minutes', headerName: 'Total Watch (min)', flex: 1 },
+  ];
 
   return (
-    <div className="flex flex-col">
-      <DataSummary data={rows} />
-      <div  className='bg-white'>
-        <DataGrid 
-          rows={rows} 
-          columns={columns} 
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10 } },
-          }}
-          pageSizeOptions={[10, 25, 50]}
-          sx={{
-            '& .data-grid-header': {
-              backgroundColor: '#f5f5f5',
-            },
-            '& .MuiDataGrid-row:nth-of-type(even)': {
-              backgroundColor: '#f8f9fa',
-            }
-          }}
-        />
-      </div>
+    <div className="space-y-6">
+        <Header onRefresh={handleRefresh} isLoading={isLoading} />
+        <Paper style={{ height: '75vh', width: '100%' }}>
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                loading={isLoading}
+            />
+        </Paper>
     </div>
   );
 };
 
-export default DataTableUserComponent;
+export default DataTableWatchtime;
