@@ -6,6 +6,7 @@ import LineChartComponent from '@/components/line-chart';
 import axios, { AxiosError } from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircularProgress, Typography } from '@mui/material';
+import { useApp } from './app-context';
 
 // Interfaces for our data structures
 interface DashboardStats {
@@ -52,9 +53,10 @@ const Dashboard = () => {
     label: 'User Accounts Created'
   });
   
+  const { startDate, endDate } = useApp();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // This function now fetches only the chart data based on the selected filters.
+  // Fetches only the chart data when filters are changed
   const fetchChartData = useCallback(async (type: string, period: string) => {
     try {
       const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
@@ -66,23 +68,20 @@ const Dashboard = () => {
     }
   }, [API_BASE_URL]);
 
-  // This function fetches the main dashboard stats.
-  const fetchDashboardStats = useCallback(async () => {
-    // This part of the function remains unchanged.
+  // Fetches all page data, including stats and the initial chart
+  const fetchPageData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
-    if (!API_BASE_URL) {
-        setError("API URL is not configured.");
-        setIsLoading(false);
-        return;
-    }
-
     try {
-      // We now fetch stats and the initial chart data in parallel
+      const statsParams = new URLSearchParams({ startDate, endDate });
+      const statsUrl = `${API_BASE_URL}/dashboard-stats?${statsParams.toString()}`;
+      
+      const chartParams = new URLSearchParams({ type: dataType, period: timePeriod });
+      const chartUrl = `${API_BASE_URL}/chart-data?${chartParams.toString()}`;
+
       const [statsResponse, initialChartResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/dashboard-stats`, { timeout: 15000 }),
-        axios.get(`${API_BASE_URL}/chart-data?type=users&period=months`, { timeout: 15000 })
+        axios.get(statsUrl, { timeout: 15000 }),
+        axios.get(chartUrl, { timeout: 15000 })
       ]);
 
       setStats(statsResponse.data);
@@ -98,22 +97,22 @@ const Dashboard = () => {
     } finally {
         setIsLoading(false);
     }
-  }, [API_BASE_URL]);
-
-  // Initial data fetch on component mount
+  }, [API_BASE_URL, startDate, endDate, dataType, timePeriod]);
+  
+  // Initial data fetch
   useEffect(() => {
-    fetchDashboardStats();
-  }, [fetchDashboardStats]);
+    fetchPageData();
+  }, [fetchPageData]);
 
   // Handlers for dropdown changes
   const handleDataTypeChange = (newType: 'users' | 'watchtime') => {
     setDataType(newType);
-    fetchChartData(newType, timePeriod); // Fetch new chart data
+    fetchChartData(newType, timePeriod);
   };
 
   const handleTimePeriodChange = (newPeriod: 'days' | 'weeks' | 'months') => {
     setTimePeriod(newPeriod);
-    fetchChartData(dataType, newPeriod); // Fetch new chart data
+    fetchChartData(dataType, newPeriod);
   };
 
   const formatWatchTime = (minutes: number) => {
@@ -129,14 +128,14 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
             <div className="text-3xl font-bold">{total}</div>
-            <p className="text-xs text-muted-foreground">{thisWeek}</p>
+            {/*<p className="text-xs text-muted-foreground">{thisWeek}</p>*/}
         </CardContent>
     </Card>
   );
 
   return (
     <div className="flex flex-col gap-6">
-      <Header onRefresh={fetchDashboardStats} isLoading={isLoading} />
+      <Header onRefresh={fetchPageData} isLoading={isLoading} />
 
       {isLoading && <StatusDisplay message="Loading Dashboard..." />}
       {error && <StatusDisplay message={error} isError />}
@@ -179,7 +178,7 @@ const Dashboard = () => {
               <CardTitle>Analytics Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Chart Controls have been re-added here */}
+              {/* Chart Controls */}
               <div className="w-full mb-5 flex gap-4">
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-muted-foreground mb-1">Data Type:</label>
@@ -199,9 +198,9 @@ const Dashboard = () => {
                     onChange={(e) => handleTimePeriodChange(e.target.value as 'days' | 'weeks' | 'months')}
                     className="px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="days">7 Days</option>
-                    <option value="weeks">4 Weeks</option>
-                    <option value="months">6 Months</option>
+                    <option value="days">Last 7 Days</option>
+                    <option value="weeks">Last 4 Weeks</option>
+                    <option value="months">Last 6 Months</option>
                   </select>
                 </div>
               </div>

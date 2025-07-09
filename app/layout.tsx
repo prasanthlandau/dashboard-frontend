@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AppProvider } from "@/components/curriculum-context"; // Renamed for clarity
+import { AppProvider } from "@/components/app-context"; // Use the new AppProvider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {/* Wrap everything in the AppProvider */}
+          {/* Wrap the entire application in the AppProvider */}
           <AppProvider>
             <div className="flex min-h-screen w-full bg-muted/40">
               <Sidebar />
