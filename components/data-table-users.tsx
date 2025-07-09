@@ -7,22 +7,22 @@ import UserDetailsDialog from './user-details';
 import Header from './header';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { useCurriculum } from './curriculum-context';
+import { useApp } from './app-context'; // Using the correct global context
 
 // Icon mappings for different statuses
 const statusIconMap = {
-  Active: <CheckCircle style={{ color: 'green' }} />,
-  'Not verified': <Cancel style={{ color: 'orange' }} />,
+  'Active': <CheckCircle className="text-green-500" />,
+  'Not verified': <Cancel className="text-orange-500" />,
 };
 
 const onboardingIconMap = {
-  Manual: <Person style={{ color: 'blue' }} />,
-  Self: <Person style={{ color: 'orange' }} />,
+  'Manual': <Person className="text-blue-500" />,
+  'Self': <Person className="text-orange-500" />,
 };
 
 const userTypeIconMap = {
-  Student: <School style={{ color: 'green' }} />,
-  Teacher: <AccountCircle style={{ color: 'blue' }} />,
+  'Student': <School className="text-green-500" />,
+  'Teacher': <AccountCircle className="text-blue-500" />,
 };
 
 // Legend component
@@ -74,17 +74,13 @@ const DataTableUsers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // State for filters
   const [searchText, setSearchText] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const { getCurriculumId } = useCurriculum();
+  // Get the global date range from the App context
+  const { startDate, endDate } = useApp();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const minDate = "2024-08-26";
 
   const columns: GridColDef[] = useMemo(() => [
     { field: 'email', headerName: 'Email', flex: 3 },
@@ -114,11 +110,14 @@ const DataTableUsers = () => {
     },
   ], []);
 
-  const fetchUsers = useCallback(async (curriculumId?: string) => {
+  // The fetchUsers function now only depends on the global date range
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const url = `${API_BASE_URL}/users${curriculumId ? `?curriculum=${curriculumId}` : ''}`;
+      const params = new URLSearchParams({ startDate, endDate });
+      const url = `${API_BASE_URL}/users?${params.toString()}`;
+      
       const response = await axios.get(url);
       if (response.data.success) {
         const formattedData = response.data.users.map((user: any) => ({ ...user, id: user.id.toString() }));
@@ -133,17 +132,12 @@ const DataTableUsers = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, startDate, endDate]); // Dependency array now uses startDate and endDate
 
+  // useEffect will re-run fetchUsers whenever the date range changes
   useEffect(() => {
-    const curriculumId = getCurriculumId();
-    fetchUsers(curriculumId);
-  }, [fetchUsers, getCurriculumId]);
-
-  const handleRefresh = () => {
-      const curriculumId = getCurriculumId();
-      fetchUsers(curriculumId);
-  };
+    fetchUsers();
+  }, [fetchUsers]);
   
   const handleViewDetails = (userId: string) => {
     setSelectedUserId(userId);
@@ -151,63 +145,35 @@ const DataTableUsers = () => {
   };
 
   const handleFilter = () => {
-    let filtered = allRows.filter((row) => {
-      const emailMatch = row.email.toLowerCase().includes(searchText.toLowerCase());
-      const rowDate = dayjs(row.created_at);
-      const isAfterMinDate = rowDate.isAfter(dayjs(minDate));
-      const isInRange = (!startDate || !endDate) ? true : rowDate.isAfter(dayjs(startDate)) && rowDate.isBefore(dayjs(endDate));
-      return emailMatch && isAfterMinDate && isInRange;
-    });
+    let filtered = allRows.filter((row) => 
+      row.email.toLowerCase().includes(searchText.toLowerCase())
+    );
     setVisibleRows(filtered);
   };
 
   const handleReset = () => {
     setSearchText('');
-    setStartDate('');
-    setEndDate('');
     setVisibleRows(allRows);
   };
 
   return (
     <div className="space-y-6">
-      <Header onRefresh={handleRefresh} isLoading={isLoading} />
+      <Header onRefresh={fetchUsers} isLoading={isLoading} />
       <StatusAndOnboardingLegend />
       <DataSummary data={visibleRows} />
       
-      <Paper className="p-4 space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+      {/*<Paper className="p-4 flex items-center gap-4">
         <TextField
           label="Search by email"
           variant="outlined"
           size="small"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="w-full md:w-auto"
-        />
-        <TextField
-          label="Start Date"
-          type="date"
-          variant="outlined"
-          size="small"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ min: minDate }}
-          className="w-full md:w-auto"
-        />
-        <TextField
-          label="End Date"
-          type="date"
-          variant="outlined"
-          size="small"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ min: minDate }}
-          className="w-full md:w-auto"
+          className="flex-grow"
         />
         <Button variant="contained" onClick={handleFilter}>Filter</Button>
         <Button variant="outlined" onClick={handleReset}>Reset</Button>
-      </Paper>
+      </Paper>*/}
 
       <Paper style={{ height: '70vh', width: '100%' }}>
         <DataGrid

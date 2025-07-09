@@ -1,11 +1,11 @@
 'use client';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Moon, Sun, User, RefreshCw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, Moon, Sun, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useApp } from './app-context';
 import dayjs from 'dayjs';
-import { TextField } from '@mui/material';
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -18,43 +18,40 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
   const minDate = "2024-08-25";
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b">
+    <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
       <div className="flex-1">
         <h1 className="text-2xl font-semibold">Executive Dashboard</h1>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Calendar className="h-4 w-4" />
-        <span>
-          Data from: {dayjs(startDate).format('DD MMM YYYY')} to {dayjs(endDate).format('DD MMM YYYY')}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <TextField
-          label="Start Date"
-          type="date"
-          size="small"
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarIcon className="h-4 w-4" />
+          <span>
+            {dayjs(startDate).format('DD MMM YYYY')} - {dayjs(endDate).format('DD MMM YYYY')}
+          </span>
+        </div>
+        
+        {/* Date Pickers - using basic inputs for now, can be replaced with shadcn Date Picker */}
+        <input 
+          type="date" 
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ min: minDate }}
+          className="bg-card border border-input rounded-md px-2 py-1 text-sm"
         />
-        <TextField
-          label="End Date"
-          type="date"
-          size="small"
+        <input 
+          type="date" 
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ min: minDate }}
+          className="bg-card border border-input rounded-md px-2 py-1 text-sm"
         />
+
         <Button variant="outline" onClick={onRefresh} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
         </Button>
         <Button variant="ghost" size="icon">
           <User className="h-5 w-5" />
