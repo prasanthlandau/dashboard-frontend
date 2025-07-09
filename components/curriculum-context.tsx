@@ -1,20 +1,30 @@
 'use client';
-import { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+import dayjs from 'dayjs';
 
-interface CurriculumContextType {
+interface AppContextType {
+  // Curriculum state
   curriculum: string;
   setCurriculum: (value: string) => void;
   getCurriculumId: () => string | undefined;
+
+  // Date range state
+  startDate: string;
+  setStartDate: (date: string) => void;
+  endDate: string;
+  setEndDate: (date: string) => void;
 }
 
-const CurriculumContext = createContext<CurriculumContextType>({
-  curriculum: 'Default',
-  setCurriculum: () => {},
-  getCurriculumId: () => undefined
-});
+// Default start date and today's date for the end date
+const defaultStartDate = '2024-08-25';
+const defaultEndDate = dayjs().format('YYYY-MM-DD');
 
-export function CurriculumProvider({ children }) {
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export function AppProvider({ children }: { children: ReactNode }) {
   const [curriculum, setCurriculum] = useState('Default');
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
 
   const getCurriculumId = () => {
     switch(curriculum) {
@@ -24,11 +34,27 @@ export function CurriculumProvider({ children }) {
     }
   };
 
+  const value = {
+    curriculum,
+    setCurriculum,
+    getCurriculumId,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+  };
+
   return (
-    <CurriculumContext.Provider value={{ curriculum, setCurriculum, getCurriculumId }}>
+    <AppContext.Provider value={value}>
       {children}
-    </CurriculumContext.Provider>
+    </AppContext.Provider>
   );
 }
 
-export const useCurriculum = () => useContext(CurriculumContext);
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useApp must be used within an AppProvider');
+  }
+  return context;
+};

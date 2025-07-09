@@ -18,7 +18,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 shadow-md">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Aspire Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Executive Dashboard</h1>
       </div>
       <nav className="mt-6">
         <ul>

@@ -1,32 +1,37 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google'
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import Sidebar from "@/components/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppProvider } from "@/components/curriculum-context"; // Renamed for clarity
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Executive Dashboard",
+  title: "Aspire Dashboard",
+  description: "Executive Dashboard for Aspire",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          {/* Wrap everything in the AppProvider */}
+          <AppProvider>
+            <div className="flex min-h-screen w-full bg-muted/40">
+              <Sidebar />
+              <div className="flex-1 flex flex-col">
+                <main className="flex-1 p-4 sm:p-6">
+                  {children}
+                </main>
+              </div>
+            </div>
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>

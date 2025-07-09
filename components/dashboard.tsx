@@ -1,19 +1,19 @@
 'use client';
-import Header from '@/components/header'
-import React, { useEffect, useState, useCallback } from 'react'
-import { Users, GraduationCap, BookOpen, Clock } from 'lucide-react'
+import Header from '@/components/header';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Users, GraduationCap, BookOpen, Clock } from 'lucide-react';
 import LineChartComponent from '@/components/line-chart';
 import axios, { AxiosError } from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CircularProgress, Typography } from '@mui/material';
 
 // Interfaces for our data structures
 interface DashboardStats {
   courseWatchtime: { total: number; thisWeek: number; };
   homeworkWatchtime: { total: number; thisWeek: number; };
-  teachers: { total: number; thisWeek: number; };
-  students: { total: number; thisWeek: number; };
-  classrooms: { total:number; thisWeek: number; };
+  classrooms: { total: number; thisWeek: number; };
   homeworks: { total: number; thisWeek: number; };
+  students: { total: number; thisWeek: number; };
 }
 
 interface ChartData {
@@ -25,23 +25,17 @@ interface ChartData {
 interface MetricCardProps {
   icon: React.ElementType;
   label: string;
-  total: number | string;
-  thisWeek: number | string;
-  color: string;
+  total: string;
+  thisWeek: string;
+  borderColor: string;
 }
 
 // Reusable status display components
-const StatusDisplay = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    <p className="text-lg font-medium text-slate-600">{message}</p>
-  </div>
-);
-
-const ErrorDisplay = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center h-64 bg-red-50 border border-red-200 rounded-lg p-6">
-    <p className="text-lg font-medium text-red-700 text-center">{message}</p>
-  </div>
+const StatusDisplay = ({ message, isError = false }: { message: string, isError?: boolean }) => (
+    <div className={`flex flex-col items-center justify-center h-64 rounded-lg ${isError ? 'bg-red-50 dark:bg-red-900/10' : ''}`}>
+        {!isError && <CircularProgress />}
+        <Typography variant="h6" className={`mt-4 ${isError ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>{message}</Typography>
+    </div>
 );
 
 const Dashboard = () => {
@@ -49,6 +43,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // State for chart filters
   const [dataType, setDataType] = useState<'users' | 'watchtime'>('users');
   const [timePeriod, setTimePeriod] = useState<'days' | 'weeks' | 'months'>('months');
   const [chartData, setChartData] = useState<ChartData>({
@@ -59,39 +54,8 @@ const Dashboard = () => {
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  const fetchPageData = useCallback(async (curriculumId?: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    if (!API_BASE_URL) {
-        setError("API URL is not configured. Please check your .env.local file.");
-        setIsLoading(false);
-        return;
-    }
-
-    try {
-      const [statsResponse, chartResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/dashboard-stats`, { timeout: 15000 }),
-        axios.get(`${API_BASE_URL}/chart-data?type=${dataType}&period=${timePeriod}`, { timeout: 15000 })
-      ]);
-
-      setStats(statsResponse.data);
-      setChartData(chartResponse.data);
-
-    } catch (err) {
-      const axiosError = err as AxiosError;
-      console.error('Error fetching dashboard data:', axiosError);
-      setError(axiosError.code === 'ECONNABORTED' 
-        ? 'Failed to load dashboard data: The request timed out.'
-        : `Failed to load dashboard data. Status: ${axiosError.response?.status || 'Network Error'}`
-      );
-      setStats(null);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [API_BASE_URL, dataType, timePeriod]);
-  
-  const fetchChartDataOnly = useCallback(async (type: string, period: string) => {
+  // This function now fetches only the chart data based on the selected filters.
+  const fetchChartData = useCallback(async (type: string, period: string) => {
     try {
       const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
       const response = await axios.get(url, { timeout: 10000 });
@@ -102,18 +66,54 @@ const Dashboard = () => {
     }
   }, [API_BASE_URL]);
 
-  useEffect(() => {
-    fetchPageData();
-  }, [fetchPageData]);
+  // This function fetches the main dashboard stats.
+  const fetchDashboardStats = useCallback(async () => {
+    // This part of the function remains unchanged.
+    setIsLoading(true);
+    setError(null);
 
+    if (!API_BASE_URL) {
+        setError("API URL is not configured.");
+        setIsLoading(false);
+        return;
+    }
+
+    try {
+      // We now fetch stats and the initial chart data in parallel
+      const [statsResponse, initialChartResponse] = await Promise.all([
+        axios.get(`${API_BASE_URL}/dashboard-stats`, { timeout: 15000 }),
+        axios.get(`${API_BASE_URL}/chart-data?type=users&period=months`, { timeout: 15000 })
+      ]);
+
+      setStats(statsResponse.data);
+      setChartData(initialChartResponse.data);
+
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      console.error('Error fetching dashboard data:', axiosError);
+      setError(axiosError.code === 'ECONNABORTED' 
+        ? 'The request timed out. Please check the backend server.'
+        : `Failed to load dashboard data.`
+      );
+    } finally {
+        setIsLoading(false);
+    }
+  }, [API_BASE_URL]);
+
+  // Initial data fetch on component mount
+  useEffect(() => {
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
+
+  // Handlers for dropdown changes
   const handleDataTypeChange = (newType: 'users' | 'watchtime') => {
     setDataType(newType);
-    fetchChartDataOnly(newType, timePeriod);
+    fetchChartData(newType, timePeriod); // Fetch new chart data
   };
 
   const handleTimePeriodChange = (newPeriod: 'days' | 'weeks' | 'months') => {
     setTimePeriod(newPeriod);
-    fetchChartDataOnly(dataType, newPeriod);
+    fetchChartData(dataType, newPeriod); // Fetch new chart data
   };
 
   const formatWatchTime = (minutes: number) => {
@@ -121,122 +121,103 @@ const Dashboard = () => {
     return `${Math.round(minutes / 60)} Hrs`;
   };
 
-  const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, label, total, thisWeek, color }) => (
-    <Card className="border-l-4 border-l-blue-500">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {label}
-        </CardTitle>
-        <div className={`p-2 rounded-full ${color}`}>
-          <Icon className="h-4 w-4 text-white" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold">{total}</div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {thisWeek} this week
-        </p>
-      </CardContent>
+  const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, label, total, thisWeek, borderColor }) => (
+    <Card className={`shadow-sm hover:shadow-lg transition-shadow border-l-4 ${borderColor}`}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+            <Icon className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+            <div className="text-3xl font-bold">{total}</div>
+            <p className="text-xs text-muted-foreground">{thisWeek}</p>
+        </CardContent>
     </Card>
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Header onRefresh={fetchPageData} isLoading={isLoading} />
+    <div className="flex flex-col gap-6">
+      <Header onRefresh={fetchDashboardStats} isLoading={isLoading} />
 
-      {/* Main Layout */}
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 border-r bg-card/50 min-h-[calc(100vh-4rem)] hidden md:block">
-          <nav className="p-4">
-            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-              <div className="p-1 rounded-md bg-blue-100 dark:bg-blue-900">
-                <div className="grid grid-cols-2 gap-0.5">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
+      {isLoading && <StatusDisplay message="Loading Dashboard..." />}
+      {error && <StatusDisplay message={error} isError />}
+      
+      {!isLoading && !error && stats && (
+        <div className="space-y-6">
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+            <MetricCard 
+              icon={Clock}
+              label="Course WatchTime"
+              total={formatWatchTime(stats.courseWatchtime.total)}
+              thisWeek={`${formatWatchTime(stats.courseWatchtime.thisWeek)} this week`}
+              borderColor="border-l-blue-500"
+            />
+            <MetricCard 
+              icon={Clock}
+              label="HW WatchTime"
+              total={formatWatchTime(stats.homeworkWatchtime.total)}
+              thisWeek={`${formatWatchTime(stats.homeworkWatchtime.thisWeek)} this week`}
+              borderColor="border-l-green-500"
+            />
+            <MetricCard 
+              icon={BookOpen}
+              label="Total Classrooms"
+              total={stats.classrooms.total.toString()}
+              thisWeek={`${stats.classrooms.thisWeek} this week`}
+              borderColor="border-l-purple-500"
+            />
+            <MetricCard 
+              icon={GraduationCap}
+              label="Total Homeworks"
+              total={stats.homeworks.total.toString()}
+              thisWeek={`${stats.homeworks.thisWeek} this week`}
+              borderColor="border-l-orange-500"
+            />
+          </div>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Analytics Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Chart Controls have been re-added here */}
+              <div className="w-full mb-5 flex gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-muted-foreground mb-1">Data Type:</label>
+                  <select 
+                    value={dataType}
+                    onChange={(e) => handleDataTypeChange(e.target.value as 'users' | 'watchtime')}
+                    className="px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="users">Users</option>
+                    <option value="watchtime">Watch Time</option>
+                  </select>
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-muted-foreground mb-1">Time Period:</label>
+                  <select 
+                    value={timePeriod}
+                    onChange={(e) => handleTimePeriodChange(e.target.value as 'days' | 'weeks' | 'months')}
+                    className="px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="days">7 Days</option>
+                    <option value="weeks">4 Weeks</option>
+                    <option value="months">6 Months</option>
+                  </select>
                 </div>
               </div>
-              <span className="font-medium">Dashboard</span>
-            </div>
-          </nav>
-        </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-          {isLoading && <StatusDisplay message="Loading dashboard data..." />}
-          {error && <ErrorDisplay message={error} />}
-          
-          {!isLoading && !error && stats && (
-            <>
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <MetricCard 
-                  icon={Clock}
-                  label="Course WatchTime"
-                  total={formatWatchTime(stats.courseWatchtime.total)}
-                  thisWeek={formatWatchTime(stats.courseWatchtime.thisWeek)}
-                  color="bg-blue-100 dark:bg-blue-900"
-                />
-                <MetricCard 
-                  icon={BookOpen}
-                  label="HW WatchTime"
-                  total={formatWatchTime(stats.homeworkWatchtime.total)}
-                  thisWeek={formatWatchTime(stats.homeworkWatchtime.thisWeek)}
-                  color="bg-green-100 dark:bg-green-900"
-                />
-                <MetricCard 
-                  icon={Users}
-                  label="Total Classrooms"
-                  total={stats.classrooms.total}
-                  thisWeek={stats.classrooms.thisWeek}
-                  color="bg-purple-100 dark:bg-purple-900"
-                />
-                <MetricCard 
-                  icon={GraduationCap}
-                  label="Total Homeworks"
-                  total={stats.homeworks.total}
-                  thisWeek={stats.homeworks.thisWeek}
-                  color="bg-orange-100 dark:bg-orange-900"
+              <div style={{ height: '400px' }}>
+                <LineChartComponent 
+                  height={400} 
+                  labels={chartData.labels}
+                  data={chartData.data}
+                  label={chartData.label}
                 />
               </div>
-
-              {/* Chart Section */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Analytics Overview</CardTitle>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
-                      <span className="text-muted-foreground">User Accounts Created</span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <LineChartComponent 
-                      data={chartData.data}
-                      labels={chartData.labels}
-                      label={chartData.label}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 pt-4 border-t border-slate-100 text-sm text-slate-600">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      {dataType === 'users' 
-                        ? `${stats.students.thisWeek} Users this week` 
-                        : `${formatWatchTime(stats.courseWatchtime.thisWeek)} Watch Time this week`
-                      }
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </main>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
