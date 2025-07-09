@@ -1,222 +1,200 @@
 
-'use client';
-import Header from '@/components/header'
-import React, { useEffect, useState, useCallback } from 'react'
-import { Users, GraduationCap, BookOpen, Clock } from 'lucide-react'
-import LineChartComponent from '@/components/line-chart';
-import axios, { AxiosError } from 'axios';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Calendar, Users, Clock, BookOpen, Home } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Interfaces for our data structures
-interface DashboardStats {
-  courseWatchtime: { total: number; thisWeek: number; };
-  homeworkWatchtime: { total: number; thisWeek: number; };
-  teachers: { total: number; thisWeek: number; };
-  students: { total: number; thisWeek: number; };
-  classrooms: { total: number; thisWeek: number; };
-  homeworks: { total: number; thisWeek: number; };
-}
+const data = [
+  { name: 'Jan', value: 400 },
+  { name: 'Feb', value: 1300 },
+  { name: 'Mar', value: 1200 },
+  { name: 'Apr', value: 800 },
+  { name: 'May', value: 1000 },
+  { name: 'Jun', value: 900 },
+];
 
-interface ChartData {
-  labels: string[];
-  data: number[];
-  label: string;
-}
-
-interface MetricCardProps {
-  icon: React.ElementType;
-  label: string;
-  total: number | string;
-  thisWeek: number | string;
-  color: string;
-}
-
-// Reusable status display components
-const StatusDisplay = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    <p className="text-lg font-medium text-slate-600">{message}</p>
-  </div>
-);
-
-const ErrorDisplay = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center h-64 bg-red-50 border border-red-200 rounded-lg p-6">
-    <p className="text-lg font-medium text-red-700 text-center">{message}</p>
-  </div>
-);
-
-const Dashboard = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [dataType, setDataType] = useState<'users' | 'watchtime'>('users');
-  const [timePeriod, setTimePeriod] = useState<'days' | 'weeks' | 'months'>('months');
-  const [chartData, setChartData] = useState<ChartData>({
-    labels: [],
-    data: [],
-    label: 'User Accounts Created'
-  });
-  
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  const fetchPageData = useCallback(async (curriculumId?: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    if (!API_BASE_URL) {
-        setError("API URL is not configured. Please check your .env.local file.");
-        setIsLoading(false);
-        return;
-    }
-
-    try {
-      const [statsResponse, chartResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/dashboard-stats`, { timeout: 15000 }),
-        axios.get(`${API_BASE_URL}/chart-data?type=${dataType}&period=${timePeriod}`, { timeout: 15000 })
-      ]);
-
-      setStats(statsResponse.data);
-      setChartData(chartResponse.data);
-
-    } catch (err) {
-      const axiosError = err as AxiosError;
-      console.error('Error fetching dashboard data:', axiosError);
-      setError(axiosError.code === 'ECONNABORTED' 
-        ? 'Failed to load dashboard data: The request timed out.'
-        : `Failed to load dashboard data. Status: ${axiosError.response?.status || 'Network Error'}`
-      );
-      setStats(null);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [API_BASE_URL, dataType, timePeriod]);
-  
-  const fetchChartDataOnly = useCallback(async (type: string, period: string) => {
-    try {
-      const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
-      const response = await axios.get(url, { timeout: 10000 });
-      setChartData(response.data);
-    } catch (error) {
-      console.error(`Error fetching chart data for type: ${type}, period: ${period}`, error);
-      setChartData({ labels: [], data: [], label: 'Error loading chart data' });
-    }
-  }, [API_BASE_URL]);
-
-  useEffect(() => {
-    fetchPageData();
-  }, [fetchPageData]);
-
-  const handleDataTypeChange = (newType: 'users' | 'watchtime') => {
-    setDataType(newType);
-    fetchChartDataOnly(newType, timePeriod);
-  };
-
-  const handleTimePeriodChange = (newPeriod: 'days' | 'weeks' | 'months') => {
-    setTimePeriod(newPeriod);
-    fetchChartDataOnly(dataType, newPeriod);
-  };
-
-  const formatWatchTime = (minutes: number) => {
-    if (typeof minutes !== 'number' || isNaN(minutes)) return '0 Hrs';
-    return `${Math.round(minutes / 60)} Hrs`;
-  };
-
-  const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, label, total, thisWeek, color }) => (
-    <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className={`p-3 rounded-xl ${color}`}>
-            <Icon className="h-6 w-6 text-white" />
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium text-slate-600 mb-1">{label}</p>
-            <p className="text-2xl font-bold text-slate-900">{total}</p>
-          </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <p className="text-sm text-slate-600">
-            <span className="font-medium text-slate-900">{thisWeek}</span> this week
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
+export default function Dashboard() {
   return (
-    <div className="w-full space-y-6">
-      <Header onRefresh={fetchPageData} isLoading={isLoading} />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-16 items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Home className="h-5 w-5 text-blue-600" />
+              <span className="text-sm text-muted-foreground">/ Executive Dashboard</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Data from: 25-08-2024 to 08-07-2025
+            </div>
+            <select className="bg-background border border-input rounded-md px-3 py-1 text-sm">
+              <option>Default</option>
+            </select>
+            <Button variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+                LL
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {isLoading && <StatusDisplay message="Loading dashboard data..." />}
-      {error && <ErrorDisplay message={error} />}
-      
-      {!isLoading && !error && stats && (
-        <>
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard 
-              icon={Clock}
-              label="Course WatchTime"
-              total={formatWatchTime(stats.courseWatchtime.total)}
-              thisWeek={formatWatchTime(stats.courseWatchtime.thisWeek)}
-              color="bg-blue-500"
-            />
-            <MetricCard 
-              icon={BookOpen}
-              label="HW WatchTime"
-              total={formatWatchTime(stats.homeworkWatchtime.total)}
-              thisWeek={formatWatchTime(stats.homeworkWatchtime.thisWeek)}
-              color="bg-green-500"
-            />
-            <MetricCard 
-              icon={Users}
-              label="Total Classrooms"
-              total={stats.classrooms.total}
-              thisWeek={stats.classrooms.thisWeek}
-              color="bg-purple-500"
-            />
-            <MetricCard 
-              icon={GraduationCap}
-              label="Total Homeworks"
-              total={stats.homeworks.total}
-              thisWeek={stats.homeworks.thisWeek}
-              color="bg-orange-500"
-            />
+      {/* Sidebar */}
+      <div className="flex">
+        <aside className="w-64 border-r bg-card/50 min-h-[calc(100vh-4rem)]">
+          <nav className="p-4">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+              <div className="p-1 rounded-md bg-blue-100 dark:bg-blue-900">
+                <div className="grid grid-cols-2 gap-0.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-sm"></div>
+                </div>
+              </div>
+              <span className="font-medium">Dashboard</span>
+            </div>
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {/* Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="border-l-4 border-l-blue-500">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Course WatchTime
+                </CardTitle>
+                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">368 Hrs</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  1 Hrs this week
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-green-500">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  HW WatchTime
+                </CardTitle>
+                <div className="p-2 rounded-full bg-green-100 dark:bg-green-900">
+                  <BookOpen className="h-4 w-4 text-green-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">2694 Hrs</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  2 Hrs this week
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-purple-500">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Classrooms
+                </CardTitle>
+                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900">
+                  <Users className="h-4 w-4 text-purple-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">386</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  3 this week
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-orange-500">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Homeworks
+                </CardTitle>
+                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900">
+                  <BookOpen className="h-4 w-4 text-orange-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">1267</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  11 this week
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Chart Section */}
-          <Card className="bg-white border-0 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-slate-900">
-                Analytics Overview
-              </CardTitle>
-              <div className="flex gap-2 mt-4">
-                {/* Add chart controls here if needed */}
+          {/* Analytics Chart */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Analytics Overview</CardTitle>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                  <span className="text-muted-foreground">User Accounts Created</span>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="mb-6">
-                <LineChartComponent 
-                  data={chartData.data}
-                  labels={chartData.labels}
-                  label={chartData.label}
-                />
-              </div>
-              <div className="flex items-center gap-2 pt-4 border-t border-slate-100 text-sm text-slate-600">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {dataType === 'users' 
-                    ? `${stats.students.thisWeek} Users this week` 
-                    : `${formatWatchTime(stats.courseWatchtime.thisWeek)} Watch Time this week`
-                  }
-                </span>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data}>
+                    <defs>
+                      <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="name" 
+                      className="text-muted-foreground"
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      className="text-muted-foreground"
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        color: 'hsl(var(--card-foreground))'
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="url(#colorGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-        </>
-      )}
+        </main>
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
