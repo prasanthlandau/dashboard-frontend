@@ -25,6 +25,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/reports/teacher/page.js"
+    ],
+    "/reports/student/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/reports/student/page.js"
+    ],
+    "/watchtime/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/watchtime/page.js"
+    ],
+    "/zero/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/zero/page.js"
     ]
   }
 }

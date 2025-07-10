@@ -1,6 +1,7 @@
 {
-  "/users/page": "app/users/page.js",
-  "/reports/teacher/page": "app/reports/teacher/page.js",
   "/reports/classroom/page": "app/reports/classroom/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/reports/teacher/page": "app/reports/teacher/page.js",
+  "/users/page": "app/users/page.js",
+  "/watchtime/page": "app/watchtime/page.js"
 }

@@ -4,17 +4,23 @@ import { LineChart } from '@mui/x-charts/LineChart';
 import { useTheme } from 'next-themes';
 import { Typography } from '@mui/material';
 
-// The component now accepts a 'height' prop and handles theme-aware colors.
-export default function LineChartComponent({ data, labels, label, height }: { data: number[], labels: string[], label: string, height: number }) {
+// Define the structure for a single data series
+interface SeriesData {
+    data: number[];
+    label: string;
+    color?: string;
+}
+
+// The component now accepts a 'series' prop, which is an array of series data.
+export default function LineChartComponent({ series, labels, height }: { series: SeriesData[], labels: string[], height: number }) {
   const { resolvedTheme } = useTheme();
 
-  // Define theme-aware colors using simple hex codes to avoid parsing issues.
-  const lineColor = resolvedTheme === 'dark' ? '#60A5FA' : '#3B82F6'; // Tailwind's blue-400 and blue-500
-  const axisColor = resolvedTheme === 'dark' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))';
+  // Define theme-aware colors for chart elements
+  const axisColor = resolvedTheme === 'dark' ? '#94a3b8' : '#334155'; // slate-400 and slate-700
   const gridColor = resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const defaultLineColor = resolvedTheme === 'dark' ? '#3b82f6' : '#3b82f6'; // A consistent blue
 
-  // Handle the case where there is no data to display.
-  if (!data || data.length === 0) {
+  if (!series || series.length === 0 || series.every(s => s.data.length === 0)) {
     return (
         <div style={{ height }} className="flex items-center justify-center">
             <Typography color="text.secondary">No data available for this view.</Typography>
@@ -25,35 +31,28 @@ export default function LineChartComponent({ data, labels, label, height }: { da
   return (
     <LineChart
       height={height}
-      series={[
-        {
-          data,
-          label,
-          area: true,
-          showMark: false,
-          color: lineColor, // Use the safe hex color
+      series={series.map((s, index) => ({
+        ...s,
+        area: true,
+        showMark: false,
+        color: s.color || defaultLineColor,
+        // Apply a unique gradient for each series
+        areaStyle: {
+          fill: `url(#chart-gradient-${index})`,
         },
-      ]}
-      xAxis={[
-        {
-          scaleType: 'point',
-          data: labels,
-          tickLabelStyle: { fill: axisColor },
-        },
-      ]}
-      yAxis={[
-        {
-          tickLabelStyle: { fill: axisColor },
-        },
-      ]}
+      }))}
+      xAxis={[{
+        scaleType: 'point',
+        data: labels,
+        tickLabelStyle: { fill: axisColor },
+      }]}
+      yAxis={[{
+        tickLabelStyle: { fill: axisColor },
+      }]}
       grid={{ horizontal: true, strokeDasharray: '3 5', stroke: gridColor }}
       sx={{
         '.MuiChartsAxis-line, .MuiChartsAxis-tick': {
           stroke: gridColor,
-        },
-        // Use a theme-specific ID for the gradient to prevent conflicts
-        '.MuiAreaElement-root': {
-          fill: `url(#chart-gradient-${resolvedTheme})`,
         },
         '.MuiChartsLegend-series text': {
             fill: axisColor + ' !important',
@@ -61,10 +60,13 @@ export default function LineChartComponent({ data, labels, label, height }: { da
       }}
     >
       <defs>
-        <linearGradient id={`chart-gradient-${resolvedTheme}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor={lineColor} stopOpacity={0.4}/>
-          <stop offset="95%" stopColor={lineColor} stopOpacity={0}/>
-        </linearGradient>
+        {/* Create a separate gradient definition for each data series */}
+        {series.map((s, index) => (
+            <linearGradient key={index} id={`chart-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={s.color || defaultLineColor} stopOpacity={resolvedTheme === 'dark' ? 0.3 : 0.5}/>
+                <stop offset="95%" stopColor={s.color || defaultLineColor} stopOpacity={0}/>
+            </linearGradient>
+        ))}
       </defs>
     </LineChart>
   );

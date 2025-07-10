@@ -1,10 +1,10 @@
 'use client';
 import Header from '@/components/header';
 import React, { useEffect, useState, useCallback } from 'react';
-import { Users, GraduationCap, BookOpen, Clock } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, BookOpen, GraduationCap } from 'lucide-react';
 import LineChartComponent from '@/components/line-chart';
 import axios, { AxiosError } from 'axios';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircularProgress, Typography } from '@mui/material';
 import { useApp } from './app-context';
 
@@ -17,10 +17,15 @@ interface DashboardStats {
   students: { total: number; thisWeek: number; };
 }
 
-interface ChartData {
-  labels: string[];
+interface ChartSeries {
   data: number[];
   label: string;
+  color?: string;
+}
+
+interface ChartData {
+  labels: string[];
+  series: ChartSeries[];
 }
 
 interface MetricCardProps {
@@ -44,19 +49,16 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for chart filters
   const [dataType, setDataType] = useState<'users' | 'watchtime'>('users');
-  const [timePeriod, setTimePeriod] = useState<'days' | 'weeks' | 'months'>('months');
+  const [timePeriod, setTimePeriod] = useState<'months'>('months');
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
-    data: [],
-    label: 'User Accounts Created'
+    series: [],
   });
   
   const { startDate, endDate } = useApp();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // Fetches only the chart data when filters are changed
   const fetchChartData = useCallback(async (type: string, period: string) => {
     try {
       const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
@@ -64,28 +66,24 @@ const Dashboard = () => {
       setChartData(response.data);
     } catch (error) {
       console.error(`Error fetching chart data for type: ${type}, period: ${period}`, error);
-      setChartData({ labels: [], data: [], label: 'Error loading chart data' });
+      setChartData({ labels: [], series: [{ data: [], label: 'Error loading chart data' }] });
     }
   }, [API_BASE_URL]);
 
-  // Fetches all page data, including stats and the initial chart
   const fetchPageData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const statsParams = new URLSearchParams({ startDate, endDate });
-      const statsUrl = `${API_BASE_URL}/dashboard-stats?${statsParams.toString()}`;
-      
-      const chartParams = new URLSearchParams({ type: dataType, period: timePeriod });
-      const chartUrl = `${API_BASE_URL}/chart-data?${chartParams.toString()}`;
+      const statsUrl = `${API_BASE_URL}/dashboard-stats?startDate=${startDate}&endDate=${endDate}`;
+      const chartUrl = `${API_BASE_URL}/chart-data?type=${dataType}&period=${timePeriod}`;
 
-      const [statsResponse, initialChartResponse] = await Promise.all([
-        axios.get(statsUrl, { timeout: 15000 }),
-        axios.get(chartUrl, { timeout: 15000 })
+      const [statsResponse, chartResponse] = await Promise.all([
+        axios.get(statsUrl),
+        axios.get(chartUrl)
       ]);
 
       setStats(statsResponse.data);
-      setChartData(initialChartResponse.data);
+      setChartData(chartResponse.data);
 
     } catch (err) {
       const axiosError = err as AxiosError;
@@ -98,13 +96,11 @@ const Dashboard = () => {
         setIsLoading(false);
     }
   }, [API_BASE_URL, startDate, endDate, dataType, timePeriod]);
-  
-  // Initial data fetch
+
   useEffect(() => {
     fetchPageData();
   }, [fetchPageData]);
 
-  // Handlers for dropdown changes
   const handleDataTypeChange = (newType: 'users' | 'watchtime') => {
     setDataType(newType);
     fetchChartData(newType, timePeriod);
@@ -128,7 +124,7 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
             <div className="text-3xl font-bold">{total}</div>
-            {/*<p className="text-xs text-muted-foreground">{thisWeek}</p>*/}
+            <p className="text-xs text-muted-foreground">{thisWeek}</p>
         </CardContent>
     </Card>
   );
@@ -136,7 +132,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col gap-6">
       <Header onRefresh={fetchPageData} isLoading={isLoading} />
-
+      
       {isLoading && <StatusDisplay message="Loading Dashboard..." />}
       {error && <StatusDisplay message={error} isError />}
       
@@ -178,7 +174,6 @@ const Dashboard = () => {
               <CardTitle>Analytics Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Chart Controls */}
               <div className="w-full mb-5 flex gap-4">
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-muted-foreground mb-1">Data Type:</label>
@@ -204,13 +199,11 @@ const Dashboard = () => {
                   </select>
                 </div>
               </div>
-
               <div style={{ height: '400px' }}>
                 <LineChartComponent 
                   height={400} 
                   labels={chartData.labels}
-                  data={chartData.data}
-                  label={chartData.label}
+                  series={chartData.series}
                 />
               </div>
             </CardContent>
