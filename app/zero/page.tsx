@@ -15,7 +15,7 @@ import DataTableZeroComponent from '@/components/data-table-zero';
 const Users = () => {
   return (
     <div className="flex flex-wrap w-full">
-      <Header />
+
       <div className="w-full mt-30 overflow-x-scroll">
         <DataTableZeroComponent />
       </div>

@@ -10,13 +10,13 @@ import PieChartComponent from '@/components/pie-chart';
 
 import Box from '@mui/material/Box';
 import DataTableComponent from '@/components/data-table';
-import DataTableReportComponent from '@/components/data-table-reports';
+import DataTableClassroomComponent from '@/components/data-table-classroom';
 
 const Reports = () => {
   return (
     <div className="flex flex-wrap w-full">
       <div className="w-full mt-30 overflow-x-scroll">
-        <DataTableReportComponent />
+        <DataTableClassroomComponent />
       </div>
     </div>
   )

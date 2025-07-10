@@ -15,7 +15,7 @@ import DataTableReportComponent from '@/components/data-table-student';
 const Reports = () => {
   return (
     <div className="flex flex-wrap w-full">
-      <Header />
+
       <div className="w-full mt-30 overflow-x-scroll">
         <DataTableReportComponent />
       </div>
