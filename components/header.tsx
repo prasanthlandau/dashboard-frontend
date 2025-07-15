@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User, Moon, Sun, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
@@ -20,6 +21,14 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
+      <div className="flex-1">
+        <Image
+          src="/aspire-logo.svg"
+          alt="Aspire Logo"
+          width={100}
+          height={40}
+        />
+      </div>
       <div className="flex-1">
         <h1 className="text-2xl font-semibold">Executive Dashboard v3</h1>
       </div>
