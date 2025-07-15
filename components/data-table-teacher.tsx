@@ -48,6 +48,7 @@ const DataTableTeacher = () => {
     { field: 'teacher_name', headerName: 'Teacher Name', flex: 2 },
     { field: 'teacher_email', headerName: 'Email', flex: 2 },
     { field: 'total_classrooms', headerName: 'Classrooms', type: 'number', flex: 1 },
+    { field: 'total_homeworks', headerName: 'Homeworks', type: 'number', flex: 1 },
     { field: 'total_students', headerName: 'Students', type: 'number', flex: 1 },
     { field: 'total_watch_time', headerName: 'Watch Time (min)', type: 'number', flex: 1 },
   ], []);

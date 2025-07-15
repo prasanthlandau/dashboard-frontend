@@ -15,14 +15,25 @@ const DataSummary = ({ data }: { data: any[] }) => {
         totalHomeworkWT: data.reduce((sum, item) => sum + Number(item.total_watched_lesson_duration_in_minutes || 0), 0),
     }), [data]);
 
+    // Round to nearest whole hour
+    const minutesToHours = (mins: number) => Math.round(mins / 60);
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <MetricCard title="Total Users" value={stats.totalUsers} />
-            <MetricCard title="Total Course WatchTime (min)" value={Math.round(stats.totalCourseWT)} />
-            <MetricCard title="Total Homework WatchTime (min)" value={Math.round(stats.totalHomeworkWT)} />
+            <MetricCard
+                title="Total Course WatchTime"
+                value={`${Math.round(stats.totalCourseWT)} min (${minutesToHours(stats.totalCourseWT)} hr)`}
+            />
+            <MetricCard
+                title="Total Homework WatchTime"
+                value={`${Math.round(stats.totalHomeworkWT)} min (${minutesToHours(stats.totalHomeworkWT)} hr)`}
+            />
         </div>
     );
 };
+
+
 
 const MetricCard = ({ title, value }: { title: string, value: number }) => (
     <Card>

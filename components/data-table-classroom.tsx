@@ -46,6 +46,7 @@ const DataTableClassroom = () => {
 
   const columns: GridColDef[] = useMemo(() => [
     { field: 'classroom_name', headerName: 'Classroom Name', flex: 2 },
+    { field: 'teacher_name', headerName: 'Teacher Name', flex: 2 },
     { field: 'teacher_email', headerName: 'Teacher Email', flex: 2 },
     { field: 'total_student', headerName: 'Total Students', type: 'number', flex: 1 },
     { field: 'total_homeworks', headerName: 'Total Homeworks', type: 'number', flex: 1 },
