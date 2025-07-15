@@ -51,7 +51,7 @@ const DataTableTeacher = () => {
     { field: 'total_homeworks', headerName: 'Homeworks', type: 'number', flex: 1 },
     { field: 'total_lessons', headerName: 'Lessons', type: 'number', flex: 1 },
     { field: 'total_students', headerName: 'Students', type: 'number', flex: 1 },
-    { field: 'total_watch_time', headerName: 'Watch Time (min)', type: 'number', flex: 1 },
+    { field: 'total_watch_time', headerName: 'H/W Watch Time (min)', type: 'number', flex: 1 },
   ], []);
 
   const fetchTeacherReport = useCallback(async () => {
