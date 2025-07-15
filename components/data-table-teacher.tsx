@@ -13,13 +13,14 @@ const DataSummary = ({ data }: { data: any[] }) => {
         totalTeachers: data.length,
         totalClassrooms: data.reduce((sum, item) => sum + Number(item.total_classrooms || 0), 0),
         totalStudents: data.reduce((sum, item) => sum + Number(item.total_students || 0), 0),
+        totalHomeworks: data.reduce((sum, item) => sum + Number(item.total_homeworks || 0), 0),
     }), [data]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <MetricCard title="Total Teachers" value={stats.totalTeachers} />
             <MetricCard title="Total Classrooms" value={stats.totalClassrooms} />
             <MetricCard title="Total Students" value={stats.totalStudents} />
+            <MetricCard title="Total Homeworks" value={stats.totalHomeworks} />
         </div>
     );
 };

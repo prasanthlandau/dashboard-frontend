@@ -2,11 +2,33 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Cancel, Person, School, AccountCircle } from '@mui/icons-material';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Tooltip } from '@mui/material';
 import Header from './header';
 import axios from 'axios';
 import { useApp } from './app-context';
+
+
+const onboardingIconMap = {
+  'Manual': <Person className="text-blue-500" />,
+  'Self': <Person className="text-orange-500" />,
+};
+
+const userTypeIconMap = {
+  'Student': <School className="text-green-500" />,
+  'Teacher': <AccountCircle className="text-blue-500" />,
+};
+
+const StatusAndOnboardingLegend = () => (
+    <div className="flex items-center gap-x-6 gap-y-2 mb-4 flex-wrap p-4 bg-card rounded-lg border">
+        <div className="flex items-center gap-2 text-sm"><Person className="h-4 w-4 text-blue-500" /><span>Manual Onboard</span></div>
+        <div className="flex items-center gap-2 text-sm"><Person className="h-4 w-4 text-orange-500" /><span>Self Onboard</span></div>
+        <div className="flex items-center gap-2 text-sm"><School className="h-4 w-4 text-green-500" /><span>Student</span></div>
+        <div className="flex items-center gap-2 text-sm"><AccountCircle className="h-4 w-4 text-blue-500" /><span>Teacher</span></div>
+    </div>
+);
 
 const DataSummary = ({ data }: { data: any[] }) => {
     const stats = useMemo(() => ({
@@ -57,6 +79,8 @@ const DataTableWatchtime = () => {
 
   const columns: GridColDef[] = useMemo(() => [
     { field: 'email', headerName: 'Email', flex: 3 },
+    { field: 'user_type', headerName: 'User Type', flex: 1, renderCell: (params) => <Tooltip title={params.value}>{userTypeIconMap[params.value]}</Tooltip> },
+    { field: 'user_join', headerName: 'Onboarding', flex: 1, renderCell: (params) => <Tooltip title={params.value}>{onboardingIconMap[params.value]}</Tooltip> },
     { field: 'total_watched_minutes_q1', headerName: 'Course Watch (min)', type: 'number', flex: 1 },
     { field: 'total_watched_lesson_duration_in_minutes', headerName: 'Homework Watch (min)', type: 'number', flex: 1 },
     { field: 'total_watch_minutes', headerName: 'Total Watch (min)', type: 'number', flex: 1 },
@@ -101,6 +125,7 @@ const DataTableWatchtime = () => {
   return (
     <div className="space-y-6">
       <Header onRefresh={fetchWatchtimeReport} isLoading={isLoading} />
+      <StatusAndOnboardingLegend />
       <DataSummary data={visibleRows} />
 
       <Card>
