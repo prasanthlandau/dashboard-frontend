@@ -45,3 +45,9 @@ node_modules
 .next/cache/webpack/server-development/9.pack.gz
 .next/cache/webpack/server-development/index.pack.gz
 .next/cache/webpack/server-development/index.pack.gz.old
+.next/cache/webpack/client-development/0.pack.gz
+.next/cache/webpack/client-development/4.pack.gz
+.next/cache/webpack/client-development/7.pack.gz
+.next/cache/webpack/client-development/index.pack.gz
+.next/cache/webpack/client-development/index.pack.gz.old
+/.next
