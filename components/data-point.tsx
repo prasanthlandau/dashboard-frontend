@@ -97,7 +97,7 @@ export default function DataPointPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        Weekly Data Points (07 Jul 2025 – 13 Jul 2025)
+        Weekly Data For Tech Team (07 Jul 2025 – 13 Jul 2025)
       </h1>
 
       {/* Metric Cards */}

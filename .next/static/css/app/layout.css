@@ -991,6 +991,9 @@ video {
 .border-r {
   border-right-width: 1px;
 }
+.border-t {
+  border-top-width: 1px;
+}
 .border-blue-600 {
   --tw-border-opacity: 1;
   border-color: rgb(37 99 235 / var(--tw-border-opacity, 1));

@@ -58,7 +58,7 @@ const DataSummary = ({ data }: { data: any[] }) => {
         <MetricCard title="Teachers" value={stats.teachers} />
         <MetricCard title="Active Users" value={stats.activeUsers} />
         <MetricCard title="Manual Onboard" value={stats.manualUsers} />
-        <MetricCard title="Pending" value={stats.pendingUsers} />
+        <MetricCard title="Not Verified" value={stats.pendingUsers} />
     </div>
   );
 };

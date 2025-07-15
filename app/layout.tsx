@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/components/app-context"; // Use the new AppProvider
+import Footer from '../components/footer'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
                 <main className="flex-1 p-4 sm:p-6">
                   {children}
                 </main>
+                <Footer />
               </div>
             </div>
           </AppProvider>

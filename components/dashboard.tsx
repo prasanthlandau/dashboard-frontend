@@ -6,6 +6,7 @@ import { AjaxChart } from '@/components/ajax-chart';
 import axios, { AxiosError } from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from './app-context';
+import Footer from '../components/footer'
 
 // Interfaces for our data structures
 interface DashboardStats {
@@ -103,7 +104,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="space-y-6">
       {/* Header */}
       <Header onRefresh={fetchPageData} isLoading={isLoading} />
 

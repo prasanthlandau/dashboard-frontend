@@ -51,10 +51,10 @@ const menuItems: NavItem[] = [
   {
     path: '/reports/weekly',
     icon: AreaChart,
-    label: 'Weekly Reports',
+    label: 'One Click Report',
     subMenu: [
-      { path: '/reports/data-point', icon: BookOpen, label: 'Data points' },
-      { path: '/reports/user-data', icon: User, label: 'User Data' },
+      { path: '/reports/data-point', icon: BookOpen, label: 'Tech' },
+      { path: '/reports/user-data', icon: User, label: 'Implementation' },
     ],
   },
   { path: '/zero', icon: AlertTriangle, label: 'User With Zero WT' },

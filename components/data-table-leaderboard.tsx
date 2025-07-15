@@ -5,6 +5,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import Header from './header';
 import axios from 'axios';
 
 const LeaderboardSummary = ({ data }: { data: any[] }) => {
@@ -99,6 +100,7 @@ const DataTableLeaderboard = () => {
 
   return (
     <div className="space-y-6">
+      <Header onRefresh={fetchLeaderboard} isLoading={isLoading} />
       <LeaderboardSummary data={visibleRows} />
 
       <Card>

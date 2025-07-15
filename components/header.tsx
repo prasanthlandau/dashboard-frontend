@@ -21,7 +21,7 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
       <div className="flex-1">
-        <h1 className="text-2xl font-semibold">Executive Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Executive Dashboard v3</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -60,6 +60,7 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
           <User className="h-5 w-5" />
         </Button>
       </div>
+    
     </header>
   );
 };

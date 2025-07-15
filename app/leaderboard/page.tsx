@@ -5,11 +5,11 @@ import DataTableLeaderboard from '@/components/data-table-leaderboard';
 
 const Leaderboard = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="p-6">
+
+    <div className="flex flex-wrap w-full">
+      <div className="w-full mt-30 overflow-x-scroll">
         <DataTableLeaderboard />
-      </main>
+      </div>
     </div>
   );
 };
