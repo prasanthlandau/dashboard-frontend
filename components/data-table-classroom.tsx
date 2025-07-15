@@ -50,7 +50,7 @@ const DataTableClassroom = () => {
     { field: 'total_student', headerName: 'Total Students', type: 'number', flex: 1 },
     { field: 'total_homeworks', headerName: 'Total Homeworks', type: 'number', flex: 1 },
     { field: 'total_videos', headerName: 'Total Lessons', type: 'number', flex: 1 },
-    { field: 'homework_completion_rate', headerName: 'Completion Rate', flex: 1, valueFormatter: (params) => `${params.value} %` },
+    { field: 'homework_completion_rate', headerName: 'Completion Rate', flex: 1 },
   ], []);
 
   const fetchClassroomReport = useCallback(async () => {

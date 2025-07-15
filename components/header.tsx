@@ -16,6 +16,7 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
   const { theme, setTheme } = useTheme();
   const { startDate, setStartDate, endDate, setEndDate } = useApp();
   const minDate = "2024-08-25";
+  const maxDate = dayjs().format("YYYY-MM-DD");
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
@@ -25,25 +26,27 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarIcon className="h-4 w-4" />
+          {/*<CalendarIcon className="h-4 w-4" />
           <span>
             {dayjs(startDate).format('DD MMM YYYY')} - {dayjs(endDate).format('DD MMM YYYY')}
-          </span>
+          </span>*/}
         </div>
-        
-        {/* Date Pickers - using basic inputs for now, can be replaced with shadcn Date Picker */}
-        <input 
-          type="date" 
+
+        <input
+          type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="bg-card border border-input rounded-md px-2 py-1 text-sm"
+          min={minDate}
+          max={maxDate}
         />
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="bg-card border border-input rounded-md px-2 py-1 text-sm"
+          min={minDate}
+          max={maxDate}
         />
+
 
         <Button variant="outline" onClick={onRefresh} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
