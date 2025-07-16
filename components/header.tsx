@@ -23,10 +23,11 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
     <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
       <div className="flex-1">
         <Image
-          src="/aspire-logo.svg"
+          src={theme === 'dark' ? '/aspire-logo-dark.svg' : '/aspire-logo-light.svg'}
           alt="Aspire Logo"
           width={100}
           height={40}
+          priority
         />
       </div>
       <div className="flex-1">

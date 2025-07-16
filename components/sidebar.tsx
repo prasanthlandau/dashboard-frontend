@@ -39,7 +39,7 @@ const menuItems: NavItem[] = [
   {
     path: '/reports/classroom',
     icon: AreaChart,
-    label: 'Reports',
+    label: 'Classroom Reports',
     subMenu: [
       { path: '/reports/classroom', icon: BookOpen, label: 'Classroom' },
       { path: '/reports/teacher', icon: User, label: 'Teacher' },

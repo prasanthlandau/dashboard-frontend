@@ -17,9 +17,9 @@ const DataSummary = ({ data }: { data: any[] }) => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <MetricCard title="Total Students" value={stats.totalStudents} />
-            <MetricCard title="Homeworks Assigned" value={stats.totalHomeworksAssigned} />
-            <MetricCard title="Homeworks Completed" value={stats.totalCompleted} />
+            <MetricCard title="Total Students Enrolled in Classrooms" value={stats.totalStudents} />
+            <MetricCard title="Homeworks Assigned To Students" value={stats.totalHomeworksAssigned} />
+            <MetricCard title="Homeworks Completed By Students" value={stats.totalCompleted} />
         </div>
     );
 };
