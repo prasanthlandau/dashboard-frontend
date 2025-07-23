@@ -1,9 +1,16 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Moon, Sun, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, Moon, Sun, RefreshCw, LogOut, UserCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useApp } from './app-context';
 import dayjs from 'dayjs';
@@ -16,12 +23,18 @@ interface HeaderProps {
 const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
   const { theme, setTheme } = useTheme();
   const { startDate, setStartDate, endDate, setEndDate } = useApp();
+  const router = useRouter();
   const minDate = "2024-08-25";
   const maxDate = dayjs().format("YYYY-MM-DD");
 
+  const handleLogout = () => {
+    sessionStorage.removeItem("isLoggedIn");
+    router.push("/login");
+  };
+
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b">
-      <div className="flex-1">
+    <header className="flex flex-wrap items-center justify-between gap-4 p-4 border-b">
+      <div className="flex-shrink-0">
         <Image
           src={theme === 'dark' ? '/aspire-logo-dark.svg' : '/aspire-logo-light.svg'}
           alt="Aspire Logo"
@@ -30,24 +43,18 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
           priority
         />
       </div>
-      <div className="flex-1">
-        <h1 className="text-2xl font-semibold">Executive Dashboard v3</h1>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-xl md:text-2xl font-semibold truncate">Executive Dashboard v3</h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {/*<CalendarIcon className="h-4 w-4" />
-          <span>
-            {dayjs(startDate).format('DD MMM YYYY')} - {dayjs(endDate).format('DD MMM YYYY')}
-          </span>*/}
-        </div>
-
+      <div className="flex items-center gap-2 md:gap-4">
         <input
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           min={minDate}
           max={maxDate}
+          className="p-2 border rounded-md bg-transparent text-sm"
         />
         <input
           type="date"
@@ -55,10 +62,10 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
           onChange={(e) => setEndDate(e.target.value)}
           min={minDate}
           max={maxDate}
+          className="p-2 border rounded-md bg-transparent text-sm"
         />
 
-
-        <Button variant="outline" onClick={onRefresh} disabled={isLoading}>
+        <Button variant="outline" size="icon" onClick={onRefresh} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
@@ -66,11 +73,27 @@ const Header = ({ onRefresh, isLoading = false }: HeaderProps) => {
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
-        <Button variant="ghost" size="icon">
-          <User className="h-5 w-5" />
-        </Button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <User className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <UserCircle className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
       </div>
-    
     </header>
   );
 };

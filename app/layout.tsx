@@ -21,9 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {/* Wrap the entire application in the AppProvider */}
-          <AppProvider>
+        <AppProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange >
             <div className="flex min-h-screen w-full bg-muted/40">
               <Sidebar />
               <div className="flex-1 flex flex-col">
@@ -33,8 +36,8 @@ export default function RootLayout({
                 <Footer />
               </div>
             </div>
-          </AppProvider>
-        </ThemeProvider>
+        < /ThemeProvider>
+        </AppProvider>
       </body>
     </html>
   );

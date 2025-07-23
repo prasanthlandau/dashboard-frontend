@@ -4,7 +4,5 @@ node_modules
 /.next
 /.next/cache/webpack/client-development
 /.next/cache/webpack
-*.gz
-/.next/cache/webpack/client-development
-/.next/cache/webpack
 /.next/cache
+.next/app-build-manifest.json
