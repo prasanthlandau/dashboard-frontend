@@ -42,7 +42,7 @@ export default function LoginPage() {
       return;
     }
     const validUsers = {
-      "dashboard@aspirelearning.app": "Dashboard@2025$",
+      "dashboard@aspirelearning.app": "Dash@2025$",
       "user@aspirelreaning.app": "User@2025$",
     };
 

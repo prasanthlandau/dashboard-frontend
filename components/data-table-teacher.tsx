@@ -90,7 +90,6 @@ const DataTableTeacher = () => {
 
   return (
     <div className="space-y-6">
-      <Header onRefresh={fetchTeacherReport} isLoading={isLoading} />
       <DataSummary data={visibleRows} />
 
       <Card>

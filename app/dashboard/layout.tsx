@@ -1,9 +1,11 @@
 "use client";
 
+import Sidebar from "@/components/sidebar";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
-import DashboardComponent from '@/components/dashboard';
 
 export default function DashboardLayout({
   children,
@@ -23,6 +25,7 @@ export default function DashboardLayout({
     }
   }, [router]);
 
+  // While checking authorization, show a loading spinner
   if (!isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -32,11 +35,12 @@ export default function DashboardLayout({
     );
   }
 
-  // If authorized, render the protected dashboard layout
   return (
-    <div className="flex flex-wrap w-full">
-      <div className="w-full mt-30 overflow-x-scroll">
-        <DashboardComponent />
+    <div className="flex min-h-screen w-full bg-muted/40">
+      <Sidebar />
+      <div className="flex flex-col flex-1">
+        <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8">{children}</main>
+        <Footer />
       </div>
     </div>
   );

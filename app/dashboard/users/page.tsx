@@ -1,4 +1,3 @@
-import Header from '@/components/header'
 import React from 'react'
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import ClassIcon from '@mui/icons-material/Class';
@@ -15,7 +14,6 @@ import DataTableReportComponent from '@/components/data-table-users';
 const Users = () => {
   return (
     <div className="flex flex-wrap w-full">
-      
       <div className="w-full mt-30 overflow-x-scroll">
         <DataTableReportComponent />
       </div>
