@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts'
-import { Clock, TrendingUp } from 'lucide-react'
+import { Clock } from 'lucide-react'
 
 /* ───────────────────────────────────
    Static “stat cards” at the top
@@ -23,15 +23,15 @@ import { Clock, TrendingUp } from 'lucide-react'
 const OTHER_DATA_POINTS = [
   {
     label: "Last week's total Watchminutes",
-    value: '10 Hr 21 Min',
-    period: '(07th Jul to 13th Jul)',
+    value: '5 Hr 23 Min',
+    period: '(21st Jul to 27th Jul)',
     icon: <Clock className="w-6 h-6 text-blue-500" />
   },
   {
     label: 'Total watchminutes',
-    value: '2939 Hr 3 Min',
+    value: '2953 Hr 21 Min',
     period: '(since 1st Sep 2024)',
-    icon: <TrendingUp className="w-6 h-6 text-green-500" />
+    icon: <Clock className="w-6 h-6 text-green-500" />
   }
 ]
 
@@ -39,13 +39,13 @@ const OTHER_DATA_POINTS = [
    Donut datasets
    ─────────────────────────────────── */
 const userBreakdown = [
-  { name: 'Students', value: 5853 },
-  { name: 'Teachers', value: 361 }
+  { name: 'Students', value: 5860 },
+  { name: 'Teachers', value: 365 }
 ]
 
 const weeklyUserBreakdown = [
-  { name: 'Accounts Activated', value: 11 },
-  { name: 'Accounts Not Verified', value: 2 }
+  { name: 'Accounts Activated', value: 3 },
+  { name: 'Accounts Not Verified', value: 0 }
 ]
 
 /* Brand colors */
@@ -190,7 +190,7 @@ export default function UserDataPage () {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        Weekly Data For Implementation Team (07 Jul 2025 – 13 Jul 2025)
+        Weekly Data For Implementation Team (21 Jul 2025 – 27 Jul 2025)
       </h1>
 
       {/* Static top cards */}
@@ -214,7 +214,7 @@ export default function UserDataPage () {
       {/* Donut charts with legends */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DonutCard
-          title="Users Registered Last Week(07 Jul – 13 Jul)"
+          title="Users Registered Last Week(14 Jul – 20 Jul)"
           data={weeklyUserBreakdown}
           colors={[COLORS[2], COLORS[3]]}
           centerLabel="Users Registered"
@@ -222,7 +222,7 @@ export default function UserDataPage () {
         />
 
         <DonutCard
-          title="Total Users Registered (01 Sep 24 – 13 Jul 25)"
+          title="Total Users Registered (01 Sep 24 – 20 Jul 25)"
           data={userBreakdown}
           colors={[COLORS[0], COLORS[1]]}
           centerLabel="Total Users"

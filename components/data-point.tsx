@@ -5,28 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart } from "@mui/x-charts/PieChart";
 
 const METRIC_CARDS = [
-  { label: "Total Watch Time", value: "10 Hr 21 Min" },
-  { label: "Course Library Watch Time", value: "5 Hr 48 Min" },
-  { label: "Homework Watch Time", value: "4 Hr 33 Min" },
-  { label: "Total Homework Created", value: "8" }
+  { label: "Total Watch Time", value: "5 Hr 23 Min" },
+  { label: "Course Library Watch Time", value: "4 Hr 26 Min" },
+  { label: "Homework Watch Time", value: "0 Hr 58 Min" },
+  { label: "Total Homework Created", value: "7" }
 ];
 
 // Data for the Profile Distribution chart
 const PROFILE_DISTRIBUTION_DATA = [
-  { id: 0, value: 4, label: "Teachers", color: "#4caf50" },
-  { id: 1, value: 7, label: "Students", color: "#1976d2" }
+  { id: 0, value: 0, label: "Teachers", color: "#4caf50" },
+  { id: 1, value: 3, label: "Students", color: "#1976d2" }
 ];
 
 // Data for the Onboarded User distribution chart
 const ONBOARDED_PIE_DATA = [
   { id: 0, value: 0, label: "Manual", color: "#66bb6a" },
-  { id: 1, value: 11, label: "Self", color: "#42a5f5" }
+  { id: 1, value: 3, label: "Self", color: "#42a5f5" }
 ];
 
 // Data for the new Cumulative User Distribution chart
 const CUMULATIVE_DONUT_DATA = [
-    { id: 0, value: 5853, label: "Students", color: "#1976d2" },
-    { id: 1, value: 361, label: "Teachers", color: "#4caf50" }
+    { id: 0, value: 5860, label: "Students", color: "#1976d2" },
+    { id: 1, value: 365, label: "Teachers", color: "#4caf50" }
 ];
 
 
@@ -97,7 +97,7 @@ export default function DataPointPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        Weekly Data For Tech Team (07 Jul 2025 – 13 Jul 2025)
+        Weekly Data For Tech Team (21 Jul 2025 – 27 Jul 2025)
       </h1>
 
       {/* Metric Cards */}

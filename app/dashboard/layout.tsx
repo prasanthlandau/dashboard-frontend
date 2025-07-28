@@ -16,7 +16,6 @@ export default function DashboardLayout({
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    // Check for the session flag on the client side
     const loggedIn = sessionStorage.getItem("isLoggedIn") === "true";
     if (!loggedIn) {
       router.push("/login");
@@ -25,7 +24,6 @@ export default function DashboardLayout({
     }
   }, [router]);
 
-  // While checking authorization, show a loading spinner
   if (!isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -39,7 +37,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen w-full bg-muted/40">
       <Sidebar />
       <div className="flex flex-col flex-1">
-        <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8">{children}</main>
+        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
         <Footer />
       </div>
     </div>

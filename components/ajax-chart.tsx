@@ -5,7 +5,6 @@ import LineChartComponent from '@/components/line-chart';
 import axios from 'axios';
 import { CircularProgress, Typography } from '@mui/material';
 
-
 interface ChartSeries {
   data: number[];
   label: string;
@@ -20,11 +19,15 @@ interface ChartData {
 interface AjaxChartProps {
   title?: string;
   height?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
-export const AjaxChart: React.FC<AjaxChartProps> = ({ 
-  title = "Analytics Overview", 
-  height = 400 
+export const AjaxChart: React.FC<AjaxChartProps> = ({
+  title = "Analytics Overview",
+  height = 400,
+  startDate,
+  endDate,
 }) => {
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
@@ -45,9 +48,12 @@ export const AjaxChart: React.FC<AjaxChartProps> = ({
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
+      let url = `${API_BASE_URL}/chart-data?type=${type}&period=${period}`;
+      if (startDate && endDate) {
+        url += `&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+      }
       const response = await axios.get(url, { timeout: 10000 });
       setChartData(response.data);
     } catch (error) {
@@ -57,12 +63,11 @@ export const AjaxChart: React.FC<AjaxChartProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, startDate, endDate]);
 
-  // Initial load
   useEffect(() => {
     fetchChartData(dataType, timePeriod);
-  }, [fetchChartData, dataType, timePeriod]);
+  }, [fetchChartData, dataType, timePeriod, startDate, endDate]);
 
   const handleDataTypeChange = (newType: 'users' | 'watchtime') => {
     setDataType(newType);
@@ -131,7 +136,7 @@ export const AjaxChart: React.FC<AjaxChartProps> = ({
             </div>
           )}
         </div>
-        
+
         {isLoading && <StatusDisplay message="Loading chart data..." />}
         {error && <StatusDisplay message={error} isError />}
         {!isLoading && !error && (

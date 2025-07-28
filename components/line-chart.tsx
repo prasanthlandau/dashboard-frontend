@@ -33,7 +33,6 @@ export default function LineChartComponent({ series, labels, height }: { series:
         area: true,
         showMark: false,
         color: s.color || defaultLineColor,
-        // Apply a unique gradient for each series
         areaStyle: {
           fill: `url(#chart-gradient-${index})`,
         },
@@ -46,23 +45,26 @@ export default function LineChartComponent({ series, labels, height }: { series:
       yAxis={[{
         tickLabelStyle: { fill: axisColor },
       }]}
-      grid={{ horizontal: true, strokeDasharray: '3 5', stroke: gridColor }}
+      grid={{ horizontal: true }}
       sx={{
-        '.MuiChartsAxis-line, .MuiChartsAxis-tick': {
+        '.MuiChartsGrid-line': {
+          strokeDasharray: '3 5',
           stroke: gridColor,
         },
+        '.MuiChartsAxis-line, .MuiChartsAxis-tick': {
+          stroke: axisColor,
+        },
         '.MuiChartsLegend-series text': {
-            fill: axisColor + ' !important',
+          fill: axisColor + ' !important',
         },
       }}
     >
       <defs>
-        
         {series.map((s, index) => (
-            <linearGradient key={index} id={`chart-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={s.color || defaultLineColor} stopOpacity={resolvedTheme === 'dark' ? 0.3 : 0.5}/>
-                <stop offset="95%" stopColor={s.color || defaultLineColor} stopOpacity={0}/>
-            </linearGradient>
+          <linearGradient key={index} id={`chart-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={s.color || defaultLineColor} stopOpacity={resolvedTheme === 'dark' ? 0.3 : 0.5} />
+            <stop offset="95%" stopColor={s.color || defaultLineColor} stopOpacity={0} />
+          </linearGradient>
         ))}
       </defs>
     </LineChart>

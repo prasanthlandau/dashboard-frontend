@@ -12,16 +12,21 @@ import PieChartComponent from '@/components/pie-chart';
 import DataUser from '@/components/data-user';
 import Box from '@mui/material/Box';
 
-// Optional: style fixes for padding/margin and scroll
-const Reports = () => (
+const Reports = () => {
+  const handleRefresh = () => {
+    console.log("Refresh triggered");
+  };
+
+  return (
   <>
-    <Header />
+    <Header onRefresh={handleRefresh} />
     <Box sx={{ width: '100%', px: { xs: 1, md: 4 }, pt: 2 }}>
       <Box sx={{ width: '100%', minWidth: 320, mt: 4, overflowX: 'auto' }}>
         <DataUser />
       </Box>
     </Box>
   </>
-);
+  );
+};
 
 export default Reports;

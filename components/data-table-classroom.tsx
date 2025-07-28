@@ -8,7 +8,19 @@ import Header from './header';
 import axios from 'axios';
 import { useApp } from './app-context';
 
-const DataSummary = ({ data }: { data: any[] }) => {
+// Define TypeScript interface for your classroom row data
+interface ClassroomRow {
+  id: string | number;
+  classroom_name: string;
+  teacher_name: string;
+  teacher_email: string;
+  total_student: number;
+  total_homeworks: number;
+  total_videos: number;
+  homework_completion_rate: string | number;
+}
+
+const DataSummary = ({ data }: { data: ClassroomRow[] }) => {
   const stats = useMemo(() => ({
     totalClassrooms: data.length,
     totalStudents: data.reduce((sum, item) => sum + Number(item.total_student || 0), 0),
@@ -25,24 +37,24 @@ const DataSummary = ({ data }: { data: any[] }) => {
 };
 
 const MetricCard = ({ title, value }: { title: string, value: number }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
-        </CardContent>
-    </Card>
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+    </CardContent>
+  </Card>
 );
 
-const DataTableClassroom = () => {
-  const [allRows, setAllRows] = useState([]);
-  const [visibleRows, setVisibleRows] = useState([]);
+const DataTableClassroom: React.FC = () => {
+  const [allRows, setAllRows] = useState<ClassroomRow[]>([]);
+  const [visibleRows, setVisibleRows] = useState<ClassroomRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
-  
+
   const { startDate, endDate } = useApp();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
   const columns: GridColDef[] = useMemo(() => [
     { field: 'classroom_name', headerName: 'Classroom Name', flex: 2 },
@@ -57,14 +69,22 @@ const DataTableClassroom = () => {
   const fetchClassroomReport = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ startDate, endDate });
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
       const url = `${API_BASE_URL}/report/classroom?${params.toString()}`;
       const response = await axios.get(url);
-      const formattedData = response.data.map((item: any) => ({ ...item, id: item.class_id }));
+      const formattedData: ClassroomRow[] = response.data.map((item: any) => ({
+        ...item,
+        id: item.class_id,
+      }));
       setAllRows(formattedData);
       setVisibleRows(formattedData);
     } catch (error) {
       console.error('Error fetching classroom report:', error);
+      setAllRows([]);
+      setVisibleRows([]);
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +95,7 @@ const DataTableClassroom = () => {
   }, [fetchClassroomReport]);
 
   const handleFilter = () => {
-    const filtered = allRows.filter(row => 
+    const filtered = allRows.filter(row =>
       row.classroom_name.toLowerCase().includes(searchText.toLowerCase()) ||
       row.teacher_email.toLowerCase().includes(searchText.toLowerCase())
     );
@@ -90,7 +110,10 @@ const DataTableClassroom = () => {
   return (
     <div className="space-y-6">
       <Header onRefresh={fetchClassroomReport} isLoading={isLoading} />
+
       <DataSummary data={visibleRows} />
+
+      {/* Uncomment below Card if you want search input and buttons */}
       {/*
       <Card className="p-4 flex items-center gap-4">
         <Input
@@ -103,6 +126,7 @@ const DataTableClassroom = () => {
         <Button variant="outline" onClick={handleReset}>Reset</Button>
       </Card>
       */}
+
       <Card>
         <div style={{ height: '70vh', width: '100%' }}>
           <DataGrid

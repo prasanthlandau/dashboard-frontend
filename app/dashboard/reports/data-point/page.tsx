@@ -12,16 +12,22 @@ import PieChartComponent from '@/components/pie-chart';
 import DataPoint from '@/components/data-point';
 import Box from '@mui/material/Box';
 
-// Optional: style fixes for padding/margin and scroll
-const Reports = () => (
-  <>
-    <Header />
-    <Box sx={{ width: '100%', px: { xs: 1, md: 4 }, pt: 2 }}>
-      <Box sx={{ width: '100%', minWidth: 320, mt: 4, overflowX: 'auto' }}>
-        <DataPoint />
+const Reports = () => {
+  const handleRefresh = () => {
+    console.log("Refresh triggered");
+  };
+
+  return (
+    <>
+      <Header onRefresh={handleRefresh} />
+      <Box sx={{ width: '100%', px: { xs: 1, md: 4 }, pt: 2 }}>
+        <Box sx={{ width: '100%', minWidth: 320, mt: 4, overflowX: 'auto' }}>
+          <DataPoint />
+        </Box>
       </Box>
-    </Box>
-  </>
-);
+    </>
+  );
+};
+
 
 export default Reports;

@@ -1,43 +1,9 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { CircularProgress } from "@mui/material";
 import DashboardComponent from '@/components/dashboard';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    // Check for the session flag on the client side
-    const loggedIn = sessionStorage.getItem("isLoggedIn") === "true";
-    if (!loggedIn) {
-      router.push("/login");
-    } else {
-      setIsAuthorized(true);
-    }
-  }, [router]);
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <CircularProgress />
-        <p className="ml-4">Verifying session...</p>
-      </div>
-    );
-  }
-
-  // If authorized, render the protected dashboard layout
+export default function DashboardPage() {
   return (
-    <div className="flex flex-wrap w-full">
-      <div className="w-full mt-30 overflow-x-scroll">
-        <DashboardComponent />
-      </div>
-    </div>
+
+      <DashboardComponent />
+
   );
 }

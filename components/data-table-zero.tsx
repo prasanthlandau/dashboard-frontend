@@ -1,7 +1,7 @@
 'use client';
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import * as React from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,24 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { useApp } from './app-context';
 
-const DataTableZero = () => {
-  const [allRows, setAllRows] = useState([]);
-  const [visibleRows, setVisibleRows] = useState([]);
+// Define the interface for zero activity user
+interface ZeroActivityUser {
+  id: string;       // Unique ID with index suffix
+  user_id: string;  // Original user_id from API (optional)
+  email: string;
+  name: string;
+  user_type: string;
+  created_at?: string | null;
+}
+
+const DataTableZero: React.FC = () => {
+  const [allRows, setAllRows] = useState<ZeroActivityUser[]>([]);
+  const [visibleRows, setVisibleRows] = useState<ZeroActivityUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
 
   const { startDate, endDate } = useApp();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -28,7 +38,7 @@ const DataTableZero = () => {
         field: 'created_at',
         headerName: 'Join Date',
         flex: 1,
-        renderCell: (params) =>
+        renderCell: (params: GridRenderCellParams<ZeroActivityUser>) =>
           params.value ? (
             <span>{dayjs(params.value).format('DD/MM/YYYY')}</span>
           ) : (
@@ -40,20 +50,24 @@ const DataTableZero = () => {
   );
 
   /**
-   * ✅ Fetches all zero activity users (with unique `id`)
+   * Fetch zero activity users with unique id containing index
    */
   const fetchZeroActivityUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ startDate, endDate });
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
       const url = `${API_BASE_URL}/zero?${params.toString()}`;
       const response = await axios.get(url);
 
-      // ✅ Add fallback unique index to avoid duplicate keys
-      const formattedData = response.data.map((item: any, index: number) => ({
-        ...item,
-        id: `${item.user_id}-${index}`, // ensures unique id
-      }));
+      const formattedData: ZeroActivityUser[] = response.data.map(
+        (item: any, index: number) => ({
+          ...item,
+          id: `${item.user_id}-${index}`, // Ensure unique id
+        })
+      );
 
       setAllRows(formattedData);
       setVisibleRows(formattedData);
@@ -66,11 +80,12 @@ const DataTableZero = () => {
     }
   }, [API_BASE_URL, startDate, endDate]);
 
-  // 🔁 Auto-fetch when date changes
+  // Fetch data on load and date changes
   useEffect(() => {
     fetchZeroActivityUsers();
   }, [fetchZeroActivityUsers]);
 
+  // Filter visible rows by email search text
   const handleFilter = () => {
     const filtered = allRows.filter((row) =>
       row.email?.toLowerCase().includes(searchText.toLowerCase())
@@ -78,6 +93,7 @@ const DataTableZero = () => {
     setVisibleRows(filtered);
   };
 
+  // Reset search and show all rows
   const handleReset = () => {
     setSearchText('');
     setVisibleRows(allRows);
@@ -87,7 +103,19 @@ const DataTableZero = () => {
     <div className="space-y-6">
       <Header onRefresh={fetchZeroActivityUsers} isLoading={isLoading} />
 
-      
+      {/* Uncomment below block to add search UI */}
+      {/*
+      <Card className="p-4 flex items-center gap-4">
+        <Input
+          placeholder="Search by email..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="max-w-sm"
+        />
+        <Button onClick={handleFilter}>Filter</Button>
+        <Button variant="outline" onClick={handleReset}>Reset</Button>
+      </Card>
+      */}
 
       <Card>
         <div style={{ height: '70vh', width: '100%' }}>

@@ -105,13 +105,12 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <Header onRefresh={fetchPageData} isLoading={isLoading} />
 
       {/* Main Layout */}
       <div className="flex">
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1">
           {isLoading && <StatusDisplay message="Loading dashboard data..." />}
           {error && <ErrorDisplay message={error} />}
 

@@ -21,18 +21,19 @@ export default function RootLayout({
       <body className={inter.className}>
         
           <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange >
-            <AppProvider>
-            <div className="flex min-h-screen w-full bg-muted/40">
-              <div className="flex-1 flex flex-col">
-                  {children}
-              </div>
-            </div>
-            </AppProvider>
-          < /ThemeProvider>
+  attribute="class"
+  defaultTheme="system"
+  enableSystem
+  disableTransitionOnChange >
+  <AppProvider>
+    <div className="flex min-h-screen w-full bg-muted/40">
+      <div className="flex-1 flex flex-col">
+          {children}
+      </div>
+    </div>
+  </AppProvider>
+</ThemeProvider>
+
         
       </body>
     </html>
