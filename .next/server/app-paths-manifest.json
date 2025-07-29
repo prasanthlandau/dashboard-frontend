@@ -1,8 +1,0 @@
-{
-  "/leaderboard/page": "app/leaderboard/page.js",
-  "/users/page": "app/users/page.js",
-  "/reports/data-point/page": "app/reports/data-point/page.js",
-  "/watchtime/page": "app/watchtime/page.js",
-  "/reports/classroom/page": "app/reports/classroom/page.js",
-  "/reports/teacher/page": "app/reports/teacher/page.js"
-}
