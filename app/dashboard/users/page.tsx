@@ -1,15 +1,5 @@
-import React from 'react'
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import ClassIcon from '@mui/icons-material/Class';
-import SchoolIcon from '@mui/icons-material/School';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import BarChartComponent from '@/components/bar-chart';
-import LineChartComponent from '@/components/line-chart';
-import PieChartComponent from '@/components/pie-chart';
-
-import Box from '@mui/material/Box';
-import DataTableComponent from '@/components/data-table';
-import DataTableReportComponent from '@/components/data-table-users';
+import React from "react";
+import DataTableReportComponent from "@/components/data-table-users";
 
 const Users = () => {
   return (
@@ -18,7 +8,7 @@ const Users = () => {
         <DataTableReportComponent />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Users
+export default Users;
