@@ -12,10 +12,12 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  OnChangeFn,
+  Table,
 } from "@tanstack/react-table";
 
 import {
-  Table,
+  Table as TableComponent,
   TableBody,
   TableCell,
   TableHead,
@@ -23,15 +25,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+
+import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -45,6 +42,12 @@ interface DataTableProps<TData, TValue> {
       }
     | boolean;
   isLoading?: boolean;
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
 }
 
 export function DataTable<TData, TValue>({
@@ -54,37 +57,49 @@ export function DataTable<TData, TValue>({
   searchValue,
   pagination = true,
   isLoading = false,
+  sorting: externalSorting,
+  onSortingChange: setExternalSorting,
+  columnFilters: externalColumnFilters,
+  onColumnFiltersChange: setExternalColumnFilters,
+  columnVisibility: externalColumnVisibility,
+  onColumnVisibilityChange: setExternalColumnVisibility,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
+  const [internalColumnFilters, setInternalColumnFilters] =
+    React.useState<ColumnFiltersState>([]);
+  const [internalColumnVisibility, setInternalColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  const sorting = externalSorting ?? internalSorting;
+  const setSorting = setExternalSorting ?? setInternalSorting;
+  const columnFilters = externalColumnFilters ?? internalColumnFilters;
+  const setColumnFilters = setExternalColumnFilters ?? setInternalColumnFilters;
+  const columnVisibility = externalColumnVisibility ?? internalColumnVisibility;
+  const setColumnVisibility =
+    setExternalColumnVisibility ?? setInternalColumnVisibility;
 
   const isPaginationEnabled = pagination !== false;
   const pageSize =
     typeof pagination === "object" && pagination.pageSize
       ? pagination.pageSize
       : 10;
-  const pageSizeOptions =
-    typeof pagination === "object" && pagination.pageSizeOptions
-      ? pagination.pageSizeOptions
-      : [10, 20, 30, 40, 50];
 
   React.useEffect(() => {
     if (searchColumn && searchValue) {
-      setColumnFilters([
-        {
-          id: searchColumn,
-          value: searchValue,
-        },
-      ]);
-    } else {
-      setColumnFilters([]);
+      const existingFilter = columnFilters.find((f) => f.id === searchColumn);
+      if (!existingFilter || existingFilter.value !== searchValue) {
+        setColumnFilters([
+          ...columnFilters.filter((f) => f.id !== searchColumn),
+          { id: searchColumn, value: searchValue },
+        ]);
+      }
+    } else if (searchColumn && !searchValue) {
+      setColumnFilters(columnFilters.filter((f) => f.id !== searchColumn));
     }
-  }, [searchColumn, searchValue]);
+  }, [searchColumn, searchValue, columnFilters, setColumnFilters]);
 
   const table = useReactTable({
     data,
@@ -123,19 +138,48 @@ export function DataTable<TData, TValue>({
             </div>
           </div>
         )}
-        <Table>
+        <TableComponent>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+                    <TableHead key={header.id} className="relative">
+                      {header.isPlaceholder ? null : (
+                        <div className="flex items-center space-x-1">
+                          <div className="flex-1">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </div>
+                          {header.column.getCanSort() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-muted"
+                              onClick={() => {
+                                const currentSort = header.column.getIsSorted();
+                                if (currentSort === "asc") {
+                                  header.column.toggleSorting(true);
+                                } else if (currentSort === "desc") {
+                                  header.column.clearSorting();
+                                } else {
+                                  header.column.toggleSorting(false);
+                                }
+                              }}
+                            >
+                              {header.column.getIsSorted() === "asc" ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : header.column.getIsSorted() === "desc" ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronsUpDown className="h-4 w-4" />
+                              )}
+                            </Button>
                           )}
+                        </div>
+                      )}
                     </TableHead>
                   );
                 })}
@@ -148,6 +192,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -170,113 +215,10 @@ export function DataTable<TData, TValue>({
               </TableRow>
             )}
           </TableBody>
-        </Table>
+        </TableComponent>
       </div>
 
-      {isPaginationEnabled && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              Showing{" "}
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}{" "}
-              to{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}{" "}
-              of {table.getFilteredRowModel().rows.length} entries
-            </div>
-            {pageSizeOptions.length > 0 && (
-              <select
-                className="h-8 w-[70px] rounded-md border border-input bg-background px-2 text-xs"
-                value={table.getState().pagination.pageSize}
-                onChange={(e) => table.setPageSize(Number(e.target.value))}
-              >
-                {pageSizeOptions.map((pageSize) => (
-                  <option key={pageSize} value={pageSize}>
-                    {pageSize}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={
-                    table.getCanPreviousPage()
-                      ? () => table.previousPage()
-                      : undefined
-                  }
-                  className={
-                    !table.getCanPreviousPage()
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-              {Array.from({ length: table.getPageCount() }, (_, i) => i + 1)
-                .filter((page) => {
-                  const currentPage = table.getState().pagination.pageIndex + 1;
-                  return (
-                    page === 1 ||
-                    page === table.getPageCount() ||
-                    Math.abs(page - currentPage) <= 1
-                  );
-                })
-                .map((page, i, array) => {
-                  const currentPage = table.getState().pagination.pageIndex + 1;
-                  const isCurrentPage = page === currentPage;
-
-                  if (i > 0 && array[i - 1] !== page - 1) {
-                    return (
-                      <React.Fragment key={`ellipsis-${page}`}>
-                        <PaginationItem>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            isActive={isCurrentPage}
-                            onClick={() => table.setPageIndex(page - 1)}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      </React.Fragment>
-                    );
-                  }
-
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        isActive={isCurrentPage}
-                        onClick={() => table.setPageIndex(page - 1)}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={
-                    table.getCanNextPage() ? () => table.nextPage() : undefined
-                  }
-                  className={
-                    !table.getCanNextPage()
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      {isPaginationEnabled && <DataTablePagination table={table} />}
     </div>
   );
 }
