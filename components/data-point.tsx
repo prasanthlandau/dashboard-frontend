@@ -1,40 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart } from "@mui/x-charts/PieChart";
+import { PieChart } from "@mui/x-charts";
+import { CircularProgress, Alert } from "@mui/material";
+import axios from "axios";
 
-const METRIC_CARDS = [
-  { label: "Total Watch Time", value: "5 Hr 23 Min" },
-  { label: "Course Library Watch Time", value: "4 Hr 26 Min" },
-  { label: "Homework Watch Time", value: "0 Hr 58 Min" },
-  { label: "Total Homework Created", value: "7" }
-];
-
-// Data for the Profile Distribution chart
-const PROFILE_DISTRIBUTION_DATA = [
-  { id: 0, value: 0, label: "Teachers", color: "#4caf50" },
-  { id: 1, value: 3, label: "Students", color: "#1976d2" }
-];
-
-// Data for the Onboarded User distribution chart
-const ONBOARDED_PIE_DATA = [
-  { id: 0, value: 0, label: "Manual", color: "#66bb6a" },
-  { id: 1, value: 3, label: "Self", color: "#42a5f5" }
-];
-
-// Data for the new Cumulative User Distribution chart
-const CUMULATIVE_DONUT_DATA = [
-    { id: 0, value: 5860, label: "Students", color: "#1976d2" },
-    { id: 1, value: 365, label: "Teachers", color: "#4caf50" }
-];
-
+// Define the base URL for your backend API
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 // A custom legend component that filters out zero-value items
 const Legend = ({ data }: { data: { label: string; value: number; color: string }[] }) => (
   <div className="flex flex-col justify-center space-y-2">
     {data.map((item) =>
-      item.value > 0 ? ( // Only render legend item if value is greater than 0
+      item.value > 0 ? (
         <div key={item.label} className="flex items-center text-sm">
           <span
             className="w-3 h-3 rounded-full mr-2"
@@ -62,7 +41,6 @@ const DonutCard = ({ title, data, centerLabel, centerValue }: any) => (
               data,
               innerRadius: 75,
               outerRadius: 100,
-              // We remove the arcLabel and legend to use our custom implementation
             }
           ]}
           legend={{ hidden: true }}
@@ -78,31 +56,67 @@ const DonutCard = ({ title, data, centerLabel, centerValue }: any) => (
   </Card>
 );
 
-export default function DataPointPage() {
-  const totalOnboardedUsers = ONBOARDED_PIE_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+// The main component, now fetching data
+export default function DataPoint({ selectedWeek, selectedWeekLabel }: { selectedWeek: string, selectedWeekLabel: string }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalProfiles = PROFILE_DISTRIBUTION_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+  const fetchData = useCallback(async () => {
+    if (!selectedWeek) return;
 
-  const totalCumulativeUsers = CUMULATIVE_DONUT_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+    setLoading(true);
+    setError(null);
+    try {
+      const [startDate, endDate] = selectedWeek.split('_');
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      // --- (EDIT) Use the absolute API_BASE_URL ---
+      const url = `${API_BASE_URL}/reports/data-point?${params.toString()}`;
+      const response = await axios.get(url);
+      setData(response.data);
+    } catch (e: any) {
+      console.error('Error fetching data point report:', e);
+      setError(e.message || "Failed to fetch data");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedWeek]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-96"><CircularProgress /></div>;
+  }
+
+  if (error) {
+    return <Alert severity="error">Error fetching data: {error}</Alert>;
+  }
+
+  if (!data) {
+    return <Alert severity="info">No data available for the selected period.</Alert>;
+  }
+
+  const { metricCards, onboardedUsers, userTypes, cumulativeUsers } = data;
+
+  const totalOnboardedUsers = onboardedUsers.data.reduce((sum: number, d: { value: number }) => sum + d.value, 0);
+  const totalProfiles = userTypes.data.reduce((sum: number, d: { value: number }) => sum + d.value, 0);
+  const totalCumulativeUsers = cumulativeUsers.data.reduce((sum: number, d: { value: number }) => sum + d.value, 0);
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        Weekly Data For Tech Team (21 Jul 2025 – 27 Jul 2025)
+        Weekly Data For Tech Team ({selectedWeekLabel})
       </h1>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {METRIC_CARDS.map((item) => (
+        {metricCards.map((item: { label: string, value: string }) => (
           <Card key={item.label} className="shadow-md hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -116,23 +130,23 @@ export default function DataPointPage() {
         ))}
       </div>
 
-      {/* Donut Charts - now in a 3-column layout */}
+      {/* Donut Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <DonutCard
           title="Onboarded Users"
-          data={ONBOARDED_PIE_DATA}
+          data={onboardedUsers.data}
           centerValue={totalOnboardedUsers}
           centerLabel="Total Users"
         />
         <DonutCard
           title="User Types"
-          data={PROFILE_DISTRIBUTION_DATA}
+          data={userTypes.data}
           centerValue={totalProfiles}
           centerLabel="Total Profiles"
         />
         <DonutCard
           title="Users Registered From Sep 1st to Today"
-          data={CUMULATIVE_DONUT_DATA}
+          data={cumulativeUsers.data}
           centerValue={totalCumulativeUsers}
           centerLabel="Total Users"
         />
