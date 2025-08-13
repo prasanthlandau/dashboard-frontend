@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CircularProgress } from "@mui/material";
+import { FiLoader } from "react-icons/fi";
 
 export default function DashboardLayout({
   children,
@@ -27,8 +27,8 @@ export default function DashboardLayout({
   if (!isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <CircularProgress />
-        <p className="ml-4">Verifying session...</p>
+        <FiLoader className="animate-spin h-6 w-6 text-primary" />
+        <p className="ml-4 text-muted-foreground">Verifying session...</p>
       </div>
     );
   }

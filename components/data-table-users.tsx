@@ -7,15 +7,8 @@ import {
   VisibilityState,
   OnChangeFn,
 } from "@tanstack/react-table";
-import {
-  CheckCircle,
-  Cancel,
-  Person,
-  School,
-  AccountCircle,
-  FilterList,
-  ViewColumn,
-} from "@mui/icons-material";
+import { FiCheck, FiX, FiUser, FiUsers, FiUserCheck } from "react-icons/fi";
+import { FiFilter, FiColumns } from "react-icons/fi";
 import UserDetailsDialog from "./user-details";
 import Header from "./header";
 import axios from "axios";
@@ -50,44 +43,44 @@ interface UserRow {
 }
 
 const statusIconMap: Record<UserRow["status"], JSX.Element> = {
-  Active: <CheckCircle className="text-green-500" />,
-  "Not verified": <Cancel className="text-orange-500" />,
+  Active: <FiCheck className="text-green-500" />,
+  "Not verified": <FiX className="text-orange-500" />,
 };
 
 const onboardingIconMap: Record<UserRow["user_join"], JSX.Element> = {
-  Manual: <Person className="text-blue-500" />,
-  Self: <Person className="text-orange-500" />,
+  Manual: <FiUser className="text-blue-500" />,
+  Self: <FiUser className="text-orange-500" />,
 };
 
 const userTypeIconMap: Record<UserRow["user_type"], JSX.Element> = {
-  Student: <School className="text-green-500" />,
-  Teacher: <AccountCircle className="text-blue-500" />,
+  Student: <FiUsers className="text-green-500" />,
+  Teacher: <FiUserCheck className="text-blue-500" />,
 };
 
 const StatusAndOnboardingLegend = () => (
   <div className="flex items-center gap-x-6 gap-y-2 mb-4 flex-wrap p-4 bg-card rounded-lg border">
     <div className="flex items-center gap-2 text-sm">
-      <CheckCircle className="h-4 w-4 text-green-500" />
+      <FiCheck className="h-4 w-4 text-green-500" />
       <span>Active</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
-      <Cancel className="h-4 w-4 text-orange-500" />
+      <FiX className="h-4 w-4 text-orange-500" />
       <span>Not verified</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
-      <Person className="h-4 w-4 text-blue-500" />
+      <FiUser className="h-4 w-4 text-blue-500" />
       <span>Manual Onboard</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
-      <Person className="h-4 w-4 text-orange-500" />
+      <FiUser className="h-4 w-4 text-orange-500" />
       <span>Self Onboard</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
-      <School className="h-4 w-4 text-green-500" />
+      <FiUsers className="h-4 w-4 text-green-500" />
       <span>Student</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
-      <AccountCircle className="h-4 w-4 text-blue-500" />
+      <FiUserCheck className="h-4 w-4 text-blue-500" />
       <span>Teacher</span>
     </div>
   </div>
@@ -384,7 +377,7 @@ const DataTableUsers = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
-                      <FilterList className="mr-2 h-4 w-4" />
+                      <FiFilter className="mr-2 h-4 w-4" />
                       Filters
                     </Button>
                   </DropdownMenuTrigger>
@@ -490,7 +483,7 @@ const DataTableUsers = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
-                      <ViewColumn className="mr-2 h-4 w-4" />
+                      <FiColumns className="mr-2 h-4 w-4" />
                       Columns
                     </Button>
                   </DropdownMenuTrigger>
@@ -581,8 +574,8 @@ const DataTableUsers = () => {
             data={allRows}
             isLoading={isLoading}
             pagination={{
-              pageSize: 15,
-              pageSizeOptions: [15, 25, 50],
+              pageSize: 10,
+              pageSizeOptions: [10, 20, 25, 30, 40, 50],
             }}
             sorting={sorting}
             onSortingChange={handleSortingChange}
