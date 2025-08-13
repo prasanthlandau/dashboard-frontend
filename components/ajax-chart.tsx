@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LineChartComponent from '@/components/line-chart';
 import axios from 'axios';
-import { CircularProgress, Typography } from '@mui/material';
+import { FiLoader } from 'react-icons/fi';
 
 interface ChartSeries {
   data: number[];
@@ -81,10 +81,10 @@ export const AjaxChart: React.FC<AjaxChartProps> = ({
 
   const StatusDisplay = ({ message, isError = false }: { message: string, isError?: boolean }) => (
     <div className={`flex flex-col items-center justify-center rounded-lg p-8 ${isError ? 'bg-red-50 dark:bg-red-900/10' : ''}`} style={{ height }}>
-      {!isError && <CircularProgress size={40} />}
-      <Typography variant="body1" className={`mt-4 ${isError ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
+      {!isError && <div className="animate-spin"><FiLoader size={40} /></div>}
+      <p className={`mt-4 ${isError ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'}`}>
         {message}
-      </Typography>
+      </p>
     </div>
   );
 
@@ -132,7 +132,7 @@ export const AjaxChart: React.FC<AjaxChartProps> = ({
           </div>
           {isLoading && (
             <div className="flex items-end">
-              <CircularProgress size={20} />
+              <div className="animate-spin"><FiLoader size={20} /></div>
             </div>
           )}
         </div>

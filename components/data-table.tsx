@@ -1,41 +1,50 @@
 'use client'
 import * as React from 'react';
-import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
-import { LinearProgress, Box, Typography } from '@mui/material';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
 
-const rows: GridRowsProp = [
-    { id: 1, classroom: 'A Science class', student: '1', homework: '0', completion: 0 },
-    { id: 2, classroom: 'An english class', student: '0', homework: '0', completion: 0 },
-    { id: 3, classroom: 'Maths YEar one', student: '8', homework: '18', completion: 20 },
+type ClassroomData = {
+  id: number;
+  classroom: string;
+  student: string;
+  homework: string;
+  completion: number;
+};
+
+const rows: ClassroomData[] = [
+  { id: 1, classroom: 'A Science class', student: '1', homework: '0', completion: 0 },
+  { id: 2, classroom: 'An english class', student: '0', homework: '0', completion: 0 },
+  { id: 3, classroom: 'Maths YEar one', student: '8', homework: '18', completion: 20 },
 ];
 
-const columns: GridColDef[] = [
-  { field: 'classroom', headerName: 'Classroom', flex: 4 },
-  { field: 'student', headerName: 'Student', flex: 2 },
-  { field: 'homework', headerName: 'Homework', flex: 3 },
+const columns: ColumnDef<ClassroomData>[] = [
+  { accessorKey: 'classroom', header: 'Classroom' },
+  { accessorKey: 'student', header: 'Student' },
+  { accessorKey: 'homework', header: 'Homework' },
   {
-    field: 'completion',
-    headerName: 'Completion',
-    flex: 2,
-    cellClassName: 'flex items-center',
-    renderCell: (params) => (
-      <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-        <LinearProgress
-          variant="determinate"
-          value={params.value}
-          sx={{ width: '100%', marginRight: 1, height: 8, borderRadius: 2 }}
-        />
-        <Typography variant="body2" color="textSecondary">{`${params.value}%`}</Typography>
-      </Box>
-    ),
+    accessorKey: 'completion',
+    header: 'Completion',
+    cell: ({ row }) => {
+      const completion = row.getValue('completion') as number;
+      return (
+        <div className="w-full flex items-center">
+          <div className="w-full mr-1 h-2 rounded-sm bg-gray-200 overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 rounded-sm"
+              style={{ width: `${completion}%` }}
+            />
+          </div>
+          <span className="text-sm text-gray-500">{`${completion}%`}</span>
+        </div>
+      );
+    },
   },
 ];
 
-
 const DataTableComponent = () => {
   return (
-    <div style={{ height: 320, width: '100%' }} className='bg-white flex grow max-md:!w-[700px]'>
-      <DataGrid rows={rows} columns={columns} />
+    <div className='h-80 w-full bg-white flex grow max-md:!w-[700px]'>
+      <DataTable data={rows} columns={columns} />
     </div>
   )
 }

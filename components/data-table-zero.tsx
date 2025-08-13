@@ -1,7 +1,8 @@
 'use client';
 import * as React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,21 +30,18 @@ const DataTableZero: React.FC = () => {
   const { startDate, endDate } = useApp();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-  const columns: GridColDef[] = useMemo(
+  const columns: ColumnDef<ZeroActivityUser>[] = useMemo(
     () => [
-      { field: 'email', headerName: 'Email', flex: 3 },
-      { field: 'name', headerName: 'Name', flex: 2 },
-      { field: 'user_type', headerName: 'User Type', flex: 1 },
-      {
-        field: 'created_at',
-        headerName: 'Join Date',
-        flex: 1,
-        renderCell: (params: GridRenderCellParams<ZeroActivityUser>) =>
-          params.value ? (
-            <span>{dayjs(params.value).format('DD/MM/YYYY')}</span>
-          ) : (
-            'N/A'
-          ),
+      { accessorKey: 'email', header: 'Email', cell: ({ row }) => row.getValue('email') },
+      { accessorKey: 'name', header: 'Name', cell: ({ row }) => row.getValue('name') },
+      { accessorKey: 'user_type', header: 'User Type', cell: ({ row }) => row.getValue('user_type') },
+      { 
+        accessorKey: 'created_at', 
+        header: 'Join Date', 
+        cell: ({ row }) => {
+          const value = row.getValue('created_at');
+          return value ? dayjs(value as string).format('DD/MM/YYYY') : 'N/A';
+        }
       },
     ],
     []
@@ -118,35 +116,14 @@ const DataTableZero: React.FC = () => {
       */}
 
       <Card>
-        <div style={{ height: '70vh', width: '100%' }}>
-          <DataGrid
-            rows={visibleRows}
+        <div className="h-[70vh] w-full">
+          <DataTable
+            data={visibleRows}
             columns={columns}
-            loading={isLoading}
-            pageSizeOptions={[15, 25, 50]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 15 } },
-            }}
-            sx={{
-              border: 'none',
-              color: 'hsl(var(--foreground))',
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: 'hsl(var(--muted))',
-                color: 'hsl(var(--muted-foreground))',
-              },
-              '& .MuiDataGrid-cell': {
-                borderBottom: '1px solid hsl(var(--border))',
-              },
-              '& .MuiDataGrid-footerContainer': {
-                borderTop: '1px solid hsl(var(--border))',
-                color: 'hsl(var(--muted-foreground))',
-              },
-              '& .MuiDataGrid-iconButton, & .MuiSelect-icon': {
-                color: 'hsl(var(--muted-foreground))',
-              },
-              '& .MuiTablePagination-root': {
-                color: 'hsl(var(--muted-foreground))',
-              },
+            isLoading={isLoading}
+            pagination={{
+              pageSize: 15,
+              pageSizeOptions: [15, 25, 50]
             }}
           />
         </div>

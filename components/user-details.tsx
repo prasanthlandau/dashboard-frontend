@@ -9,7 +9,7 @@ import {
   DialogDescription
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CircularProgress, Typography } from '@mui/material';
+import { FiLoader } from 'react-icons/fi';
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 
@@ -90,12 +90,12 @@ const UserDetailsDialog = ({ open, onClose, userId }: UserDetailsProps) => {
         <div className="py-4">
           {loading && (
             <div className="flex justify-center items-center h-48">
-              <CircularProgress />
+              <div className="animate-spin"><FiLoader size={40} /></div>
             </div>
           )}
           {error && (
             <div className="flex justify-center items-center h-48">
-              <Typography color="error">{error}</Typography>
+              <p className="text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
           {userData && (

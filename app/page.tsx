@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CircularProgress } from '@mui/material';
+import { FiLoader } from 'react-icons/fi';
 
 /**
  * This is the root page of the application.
@@ -27,7 +27,7 @@ export default function HomePage() {
   // Render a loading state while the redirect is happening
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <CircularProgress />
+      <FiLoader className="animate-spin h-6 w-6 text-primary" />
       <p className="ml-4 text-muted-foreground">Loading...</p>
     </div>
   );
