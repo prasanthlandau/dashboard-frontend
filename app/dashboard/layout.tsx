@@ -34,10 +34,10 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
+    <div className="flex h-screen w-full bg-muted/40">
       <Sidebar />
-      <div className="flex flex-col flex-1">
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
+      <div className="flex flex-col flex-1 min-h-0">
+        <main className="flex-1 overflow-hidden p-4 sm:px-6 sm:py-0">{children}</main>
         <Footer />
       </div>
     </div>
