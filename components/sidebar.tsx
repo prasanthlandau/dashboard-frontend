@@ -69,7 +69,7 @@ const menuItems: NavItem[] = [
     ],
   },
   { path: "/dashboard/zero", icon: AlertTriangle, label: "User With Zero WT" },
-  { path: "/dashboard/chat", icon: Bot, label: "AI Chat" },
+  /*{ path: "/dashboard/chat", icon: Bot, label: "AI Chat" },*/
 ];
 
 const Sidebar = () => {
