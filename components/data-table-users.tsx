@@ -105,7 +105,7 @@ const DataSummary = ({ data }: { data: UserRow[] }) => {
       <MetricCard title="Total Users" value={stats.totalUsers} />
       <MetricCard title="Students" value={stats.students} />
       <MetricCard title="Teachers" value={stats.teachers} />
-      <MetricCard title="Active Users" value={stats.activeUsers} />
+      <MetricCard title="Verified Users" value={stats.activeUsers} />
       <MetricCard title="Manual Onboard" value={stats.manualUsers} />
       <MetricCard title="Not Verified" value={stats.pendingUsers} />
     </div>
