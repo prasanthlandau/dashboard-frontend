@@ -1,50 +1,69 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
   Tooltip,
 } from "recharts";
 
-const METRIC_CARDS = [
-  { label: "Total Watch Time", value: "5 Hr 23 Min" },
-  { label: "Course Library Watch Time", value: "4 Hr 26 Min" },
-  { label: "Homework Watch Time", value: "0 Hr 58 Min" },
-  { label: "Total Homework Created", value: "7" },
-];
+type DonutItem = {
+  id: number;
+  label: string;
+  value: number;
+  color: string;
+};
 
-// Data for the Profile Distribution chart
-const PROFILE_DISTRIBUTION_DATA = [
-  { id: 0, value: 0, label: "Teachers", color: "#4caf50" },
-  { id: 1, value: 3, label: "Students", color: "#1976d2" },
-];
+type LegendProps = {
+  data: DonutItem[];
+};
 
-// Data for the Onboarded User distribution chart
-const ONBOARDED_PIE_DATA = [
-  { id: 0, value: 0, label: "Manual", color: "#66bb6a" },
-  { id: 1, value: 3, label: "Self", color: "#42a5f5" },
-];
+// Utility function: get date range for previous Monday–Sunday week
+function getPreviousWeekRange(date = new Date()) {
+  let today = new Date(date);
+  today.setHours(0, 0, 0, 0);
+  let day = today.getDay();
+  day = day === 0 ? 7 : day;
+  let lastMonday = new Date(today);
+  lastMonday.setDate(today.getDate() - day - 6);
+  let lastSunday = new Date(lastMonday);
+  lastSunday.setDate(lastMonday.getDate() + 6);
+  return { start: lastMonday, end: lastSunday };
+}
 
-// Data for the new Cumulative User Distribution chart
-const CUMULATIVE_DONUT_DATA = [
-  { id: 0, value: 5860, label: "Students", color: "#1976d2" },
-  { id: 1, value: 365, label: "Teachers", color: "#4caf50" },
-];
+type WeekItem = {
+  label: string;
+  value: string;
+  start: Date;
+  end: Date;
+};
 
-// A custom legend component that filters out zero-value items
-const LegendComponent = ({
-  data,
-}: {
-  data: { label: string; value: number; color: string }[];
-}) => (
+function getRecentWeeks(count = 8): WeekItem[] {
+  const weeks: WeekItem[] = [];
+  let ref = new Date();
+  for (let i = 0; i < count; i++) {
+    const { start, end } = getPreviousWeekRange(ref);
+    weeks.push({
+      label: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+      value: `${start.toISOString().slice(0, 10)}_${end
+        .toISOString()
+        .slice(0, 10)}`,
+      start,
+      end,
+    });
+    ref = new Date(start);
+  }
+  return weeks;
+}
+
+const LegendComponent: React.FC<LegendProps> = ({ data }) => (
   <div className="flex flex-col justify-center space-y-2">
     {data.map((item) =>
-      item.value > 0 ? ( // Only render legend item if value is greater than 0
+      item.value > 0 ? (
         <div key={item.label} className="flex items-center text-sm">
           <span
             className="w-3 h-3 rounded-full mr-2"
@@ -60,12 +79,21 @@ const LegendComponent = ({
   </div>
 );
 
-// A reusable component for a larger, cleaner donut chart with a side legend
-const DonutCard = ({ title, data, centerLabel, centerValue }: any) => {
-  const COLORS = data.map((item: any) => item.color);
+type DonutCardProps = {
+  title: string;
+  data: DonutItem[];
+  centerLabel: string;
+  centerValue: number;
+};
 
-  // Transform data for Recharts
-  const chartData = data.map((item: any) => ({
+const DonutCard: React.FC<DonutCardProps> = ({
+  title,
+  data,
+  centerLabel,
+  centerValue,
+}) => {
+  const COLORS = data.map((item) => item.color);
+  const chartData = data.map((item) => ({
     name: item.label,
     value: item.value,
   }));
@@ -91,7 +119,7 @@ const DonutCard = ({ title, data, centerLabel, centerValue }: any) => {
                 paddingAngle={2}
                 dataKey="value"
               >
-                {chartData.map((entry: any, index: number) => (
+                {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -112,68 +140,114 @@ const DonutCard = ({ title, data, centerLabel, centerValue }: any) => {
   );
 };
 
+type MetricCard = {
+  label: string;
+  value: string;
+};
+
+type ReportResponse = {
+  metricCards: MetricCard[];
+  onboardedUsers: { data: DonutItem[] };
+  userTypes: { data: DonutItem[] };
+  cumulativeUsers: { data: DonutItem[] };
+  error?: string;
+};
+
 export default function DataPointPage() {
-  const totalOnboardedUsers = ONBOARDED_PIE_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+  const weeks = useMemo(() => getRecentWeeks(8), []);
+  const [selectedWeek, setSelectedWeek] = useState<WeekItem>(weeks[0]);
+  const [report, setReport] = useState<ReportResponse | null>(null);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string | undefined;
 
-  const totalProfiles = PROFILE_DISTRIBUTION_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+  useEffect(() => {
+    async function fetchReport() {
+      setReport(null);
+      try {
+        const res = await axios.get<ReportResponse>(
+          `${API_BASE_URL}/data-point`,
+          {
+            params: {
+              startDate: selectedWeek.start.toISOString(),
+              endDate: selectedWeek.end.toISOString(),
+            },
+          }
+        );
+        setReport(res.data);
+        console.log("Backend API result:", res.data);
+      } catch (error: any) {
+        setReport({ error: error.message } as ReportResponse);
+      }
+    }
+    if (API_BASE_URL) {
+      fetchReport();
+    }
+  }, [selectedWeek, API_BASE_URL]);
 
-  const totalCumulativeUsers = CUMULATIVE_DONUT_DATA.reduce(
-    (sum, d) => sum + d.value,
-    0
-  );
+  const headingPeriod = `${selectedWeek.start.toLocaleDateString()} – ${selectedWeek.end.toLocaleDateString()}`;
+  const endLabel = selectedWeek.end.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">
-        Weekly Data For Tech Team (21 Jul 2025 – 27 Jul 2025)
-      </h1>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {METRIC_CARDS.map((item) => (
-          <Card
-            key={item.label}
-            className="shadow-md hover:shadow-lg transition-shadow"
-          >
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {item.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{item.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">
+          Weekly Data For Tech Team ({headingPeriod})
+        </h1>
+        <select
+          className="ml-4 border p-2 rounded"
+          value={selectedWeek.value}
+          onChange={(e) =>
+            setSelectedWeek(
+              weeks.find((w) => w.value === e.target.value) || weeks[0]
+            )
+          }
+        >
+          {weeks.map((week) => (
+            <option value={week.value} key={week.value}>
+              {week.label}
+            </option>
+          ))}
+        </select>
       </div>
-
-      {/* Donut Charts - now in a 3-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <DonutCard
-          title="Onboarded Users"
-          data={ONBOARDED_PIE_DATA}
-          centerValue={totalOnboardedUsers}
-          centerLabel="Total Users"
-        />
-        <DonutCard
-          title="User Types"
-          data={PROFILE_DISTRIBUTION_DATA}
-          centerValue={totalProfiles}
-          centerLabel="Total Profiles"
-        />
-        <DonutCard
-          title="Users Registered From Sep 1st to Today"
-          data={CUMULATIVE_DONUT_DATA}
-          centerValue={totalCumulativeUsers}
-          centerLabel="Total Users"
-        />
-      </div>
+      {/* ... */}
+      {report &&
+        report.onboardedUsers &&
+        report.userTypes &&
+        report.cumulativeUsers && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <DonutCard
+              title="Onboarded Users"
+              data={report.onboardedUsers.data}
+              centerValue={report.onboardedUsers.data.reduce(
+                (sum, d) => sum + d.value,
+                0
+              )}
+              centerLabel="Total Users"
+            />
+            <DonutCard
+              title="User Types"
+              data={report.userTypes.data}
+              centerValue={report.userTypes.data.reduce(
+                (sum, d) => sum + d.value,
+                0
+              )}
+              centerLabel="Total Profiles"
+            />
+            <DonutCard
+              title={`Users Registered (01 Sep 2024 – ${endLabel})`}
+              data={report.cumulativeUsers.data}
+              centerValue={report.cumulativeUsers.data.reduce(
+                (sum, d) => sum + d.value,
+                0
+              )}
+              centerLabel="Total Users"
+            />
+          </div>
+        )}
     </div>
   );
 }
+
