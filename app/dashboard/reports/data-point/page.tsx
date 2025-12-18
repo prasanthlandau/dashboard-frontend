@@ -1,12 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Header from '@/components/header';
-import { FiUserPlus, FiBook, FiUsers, FiClock } from 'react-icons/fi';
-import BarChartComponent from '@/components/bar-chart';
-import LineChartComponent from '@/components/line-chart';
-import PieChartComponent from '@/components/pie-chart';
-import DataPoint from '@/components/data-point';
+import React from "react";
+import Header from "@/components/header";
+import DataPoint from "@/components/data-point";
 
 const Reports = () => {
   const handleRefresh = () => {
@@ -16,14 +12,13 @@ const Reports = () => {
   return (
     <>
       <Header onRefresh={handleRefresh} />
-      <Box sx={{ width: '100%', px: { xs: 1, md: 4 }, pt: 2 }}>
-        <Box sx={{ width: '100%', minWidth: 320, mt: 4, overflowX: 'auto' }}>
+      <div className="w-full px-1 md:px-4 pt-2">
+        <div className="w-full min-w-[320px] mt-4 overflow-x-auto">
           <DataPoint />
-        </Box>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
-
 
 export default Reports;
