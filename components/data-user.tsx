@@ -63,7 +63,7 @@ function getPreviousWeekRange(date = new Date()) {
   return { start: lastMonday, end: lastSunday };
 }
 
-function getRecentWeeks(count = 8): WeekItem[] {
+function getRecentWeeks(count = 1): WeekItem[] {
   const weeks: WeekItem[] = [];
   let ref = new Date();
   for (let i = 0; i < count; i++) {
