@@ -63,7 +63,7 @@ function getPreviousWeekRange(date = new Date()) {
   return { start: lastMonday, end: lastSunday };
 }
 
-function getRecentWeeks(count = 1): WeekItem[] {
+function getRecentWeeks(count = 2): WeekItem[] {
   const weeks: WeekItem[] = [];
   let ref = new Date();
   for (let i = 0; i < count; i++) {
@@ -215,7 +215,7 @@ export default function UserDataPage() {
   const API_BASE_URL = process.env
     .NEXT_PUBLIC_API_BASE_URL as string | undefined;
 
-  const weeks = useMemo(() => getRecentWeeks(8), []);
+  const weeks = useMemo(() => getRecentWeeks(2), []);
   const [selectedWeek, setSelectedWeek] = useState<WeekItem>(weeks[0]);
   const [data, setData] = useState<UserDataResponse | null>(null);
 

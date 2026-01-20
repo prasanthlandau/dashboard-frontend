@@ -42,7 +42,7 @@ type WeekItem = {
   end: Date;
 };
 
-function getRecentWeeks(count = 1): WeekItem[] {
+function getRecentWeeks(count = 2): WeekItem[] {
   const weeks: WeekItem[] = [];
   let ref = new Date();
   for (let i = 0; i < count; i++) {
@@ -154,7 +154,7 @@ type ReportResponse = {
 };
 
 export default function DataPointPage() {
-  const weeks = useMemo(() => getRecentWeeks(8), []);
+  const weeks = useMemo(() => getRecentWeeks(2), []);
   const [selectedWeek, setSelectedWeek] = useState<WeekItem>(weeks[0]);
   const [report, setReport] = useState<ReportResponse | null>(null);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string | undefined;
