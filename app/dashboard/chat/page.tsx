@@ -77,16 +77,19 @@ export default function ChatPage() {
 
     try {
       // Make API request to SQL query endpoint
-      const response = await fetch("http://localhost:5555/api/sql/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://aiapi.aspirelearning.app/api/sql/query",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: userMessage.content,
+            sessionId: sessionId,
+          }),
         },
-        body: JSON.stringify({
-          query: userMessage.content,
-          sessionId: sessionId,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch response");

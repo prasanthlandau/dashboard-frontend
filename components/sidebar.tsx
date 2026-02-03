@@ -69,7 +69,7 @@ const menuItems: NavItem[] = [
     ],
   },
   { path: "/dashboard/zero", icon: AlertTriangle, label: "User With Zero WT" },
-  /*{ path: "/dashboard/chat", icon: Bot, label: "AI Chat" },*/
+  { path: "/dashboard/chat", icon: Bot, label: "AI Chat" },
 ];
 
 const Sidebar = () => {
@@ -110,7 +110,7 @@ const Sidebar = () => {
       <aside
         className={cn(
           "hidden md:flex flex-col bg-card text-card-foreground border-r transition-all duration-300",
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-64",
         )}
       >
         <div className="flex flex-col h-full">
@@ -118,7 +118,7 @@ const Sidebar = () => {
           <div
             className={cn(
               "flex items-center border-b",
-              isCollapsed ? "p-2 justify-center" : "p-4 justify-between"
+              isCollapsed ? "p-2 justify-center" : "p-4 justify-between",
             )}
           >
             {!isCollapsed && (
@@ -144,7 +144,7 @@ const Sidebar = () => {
             <ul className="space-y-2 px-2">
               {menuItems.map((item) => {
                 const isActiveGroup = item.subMenu?.some((sub) =>
-                  pathname.startsWith(sub.path)
+                  pathname.startsWith(sub.path),
                 );
                 return (
                   <li key={item.path}>
@@ -154,7 +154,7 @@ const Sidebar = () => {
                           onClick={() => toggleSubMenu(item.path)}
                           className={cn(
                             "flex items-center p-2 rounded-md cursor-pointer text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                            isActiveGroup && "bg-accent text-accent-foreground"
+                            isActiveGroup && "bg-accent text-accent-foreground",
                           )}
                         >
                           <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -178,7 +178,7 @@ const Sidebar = () => {
                                     className={cn(
                                       "flex items-center p-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                                       pathname === subItem.path &&
-                                        "bg-primary text-primary-foreground"
+                                        "bg-primary text-primary-foreground",
                                     )}
                                   >
                                     <subItem.icon className="h-4 w-4 mr-3" />
@@ -199,7 +199,7 @@ const Sidebar = () => {
                                 "flex items-center p-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                                 pathname === item.path &&
                                   "bg-primary text-primary-foreground",
-                                isCollapsed && "justify-center"
+                                isCollapsed && "justify-center",
                               )}
                             >
                               <item.icon className="h-5 w-5" />
@@ -234,7 +234,7 @@ const Sidebar = () => {
                   <div
                     className={cn(
                       "flex items-center",
-                      isCollapsed && "justify-center w-full"
+                      isCollapsed && "justify-center w-full",
                     )}
                   >
                     <LogOut className="h-5 w-5" />
