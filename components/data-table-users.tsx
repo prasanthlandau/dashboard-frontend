@@ -342,7 +342,6 @@ const DataTableUsers = () => {
   return (
     <div className="space-y-6">
       <Header onRefresh={fetchUsers} isLoading={isLoading} />
-      <StatusAndOnboardingLegend />
       <DataSummary data={filteredData} />
 
       <Card>
@@ -569,9 +568,10 @@ const DataTableUsers = () => {
             )}
           </div>
 
+          <StatusAndOnboardingLegend />
           <DataTable
             columns={columns}
-            data={allRows}
+            data={filteredData}
             isLoading={isLoading}
             pagination={{
               pageSize: 10,

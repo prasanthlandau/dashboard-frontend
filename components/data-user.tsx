@@ -42,44 +42,57 @@ type UserDataResponse = {
 
 type WeekItem = {
   label: string;
-  value: string;
-  start: Date;
-  end: Date;
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string;   // "YYYY-MM-DD"
 };
 
 /* ───────────────────────────────────
-   Week helpers (same logic as other page)
+   Week helpers: last N completed Mon–Sun weeks
    ─────────────────────────────────── */
-
-function getPreviousWeekRange(date = new Date()) {
-  const today = new Date(date);
-  today.setHours(0, 0, 0, 0);
-  let day = today.getDay(); // 0=Sun .. 6=Sat
-  day = day === 0 ? 7 : day;
-  const lastMonday = new Date(today);
-  lastMonday.setDate(today.getDate() - day - 6);
-  const lastSunday = new Date(lastMonday);
-  lastSunday.setDate(lastMonday.getDate() + 6);
-  return { start: lastMonday, end: lastSunday };
-}
 
 function getRecentWeeks(count = 2): WeekItem[] {
   const weeks: WeekItem[] = [];
-  let ref = new Date();
-  for (let i = 0; i < count; i++) {
-    const { start, end } = getPreviousWeekRange(ref);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Monday of current week (local)
+  const day = today.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+  const currentMonday = new Date(today);
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  currentMonday.setDate(today.getDate() + diffToMonday);
+
+  // Build last `count` completed weeks, skipping current week
+  for (let i = 1; i <= count; i++) {
+    const monday = new Date(currentMonday);
+    monday.setDate(currentMonday.getDate() - 7 * i);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    // IMPORTANT: build YYYY-MM-DD in LOCAL time, not via toISOString()
+    const startDate = [
+      monday.getFullYear(),
+      String(monday.getMonth() + 1).padStart(2, "0"),
+      String(monday.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    const endDate = [
+      sunday.getFullYear(),
+      String(sunday.getMonth() + 1).padStart(2, "0"),
+      String(sunday.getDate()).padStart(2, "0"),
+    ].join("-");
+
     weeks.push({
-      label: `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`,
-      value: `${start.toISOString().slice(0, 10)}_${end
-        .toISOString()
-        .slice(0, 10)}`,
-      start,
-      end,
+      label: `${monday.toLocaleDateString()} – ${sunday.toLocaleDateString()}`,
+      startDate,
+      endDate,
     });
-    ref = new Date(start);
   }
+
   return weeks;
 }
+
 
 /* ───────────────────────────────────
    UI helpers
@@ -105,8 +118,8 @@ function LegendRow({
         className="inline-block w-3 h-3 rounded-full"
         style={{ background: color }}
       />
-      <span className="text-gray-700">{label}:</span>
-      <span className="font-semibold text-gray-900">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className="font-semibold text-foreground">
         {value.toLocaleString()}
       </span>
     </div>
@@ -136,8 +149,8 @@ function DonutCard({
     if (active && payload && payload.length) {
       const { name } = payload[0];
       return (
-        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-800">{name}</p>
+        <div className="bg-card p-3 border rounded-lg shadow-lg">
+          <p className="font-semibold text-card-foreground">{name}</p>
         </div>
       );
     }
@@ -152,9 +165,9 @@ function DonutCard({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-6">
-        <div className="relative w-52 h-52 flex-shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-6">
+        <div className="relative w-full max-w-[208px] mx-auto" style={{ height: 208 }}>
+          <ResponsiveContainer width="100%" height={208}>
             <PieChart>
               <Pie
                 data={data}
@@ -162,8 +175,8 @@ function DonutCard({
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={95}
+                innerRadius="60%"
+                outerRadius="82%"
                 startAngle={90}
                 endAngle={450}
                 isAnimationActive={false}
@@ -178,10 +191,10 @@ function DonutCard({
           </ResponsiveContainer>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-3xl font-bold text-gray-900 leading-none">
+            <span className="text-3xl font-bold text-foreground leading-none">
               {total.toLocaleString()}
             </span>
-            <span className="text-sm text-gray-500">{centerLabel}</span>
+            <span className="text-sm text-muted-foreground">{centerLabel}</span>
           </div>
         </div>
 
@@ -222,35 +235,43 @@ export default function UserDataPage() {
   useEffect(() => {
     async function fetchData() {
       setData(null);
+
+      console.log("Selected week params:", {
+        label: selectedWeek.label,
+        startDate: selectedWeek.startDate,
+        endDate: selectedWeek.endDate,
+      });
+
       try {
         const res = await axios.get<UserDataResponse>(
           `${API_BASE_URL}/user-data`,
           {
             params: {
-              startDate: selectedWeek.start.toISOString(),
-              endDate: selectedWeek.end.toISOString(),
+              startDate: selectedWeek.startDate,
+              endDate: selectedWeek.endDate,
             },
           }
         );
 
-        const endLabel = selectedWeek.end.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        });
+        const endLabel = new Date(selectedWeek.endDate).toLocaleDateString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }
+        );
 
         const updated: UserDataResponse = {
           ...res.data,
           statCards: res.data.statCards.map((card, idx) => {
             if (idx === 0) {
-              // Last week's total watchminutes: show the selected week range
               return {
                 ...card,
-                period: `${selectedWeek.start.toLocaleDateString()} – ${selectedWeek.end.toLocaleDateString()}`,
+                period: selectedWeek.label,
               };
             }
             if (idx === 1) {
-              // Total watchminutes: show 1 Sep 2024 – [selected end date]
               return {
                 ...card,
                 period: `01 Sep 2024 – ${endLabel}`,
@@ -276,12 +297,15 @@ export default function UserDataPage() {
     }
   }, [API_BASE_URL, selectedWeek]);
 
-  const headingPeriod = `${selectedWeek.start.toLocaleDateString()} – ${selectedWeek.end.toLocaleDateString()}`;
-  const endLabel = selectedWeek.end.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const headingPeriod = selectedWeek.label;
+  const endLabel = new Date(selectedWeek.endDate).toLocaleDateString(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
@@ -291,15 +315,21 @@ export default function UserDataPage() {
         </h1>
         <select
           className="ml-4 border p-2 rounded"
-          value={selectedWeek.value}
-          onChange={(e) =>
-            setSelectedWeek(
-              weeks.find((w) => w.value === e.target.value) || weeks[0]
-            )
-          }
+          value={selectedWeek.startDate + "_" + selectedWeek.endDate}
+          onChange={(e) => {
+            const [s, e2] = e.target.value.split("_");
+            const found =
+              weeks.find(
+                (w) => w.startDate === s && w.endDate === e2
+              ) || weeks[0];
+            setSelectedWeek(found);
+          }}
         >
           {weeks.map((week) => (
-            <option value={week.value} key={week.value}>
+            <option
+              value={week.startDate + "_" + week.endDate}
+              key={week.startDate + "_" + week.endDate}
+            >
               {week.label}
             </option>
           ))}

@@ -397,7 +397,7 @@ const DataTableClassroom: React.FC = () => {
 
           <DataTable
             columns={columns}
-            data={allRows}
+            data={filteredData}
             isLoading={isLoading}
             pagination={{
               pageSize: 10,

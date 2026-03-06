@@ -295,7 +295,6 @@ const DataTableWatchtime = () => {
   return (
     <div className="space-y-6">
       <Header onRefresh={fetchWatchtimeReport} isLoading={isLoading} />
-      <StatusAndOnboardingLegend />
       <DataSummary data={filteredData} />
 
       <Card>
@@ -484,9 +483,10 @@ const DataTableWatchtime = () => {
             )}
           </div>
 
+          <StatusAndOnboardingLegend />
           <DataTable
             columns={columns}
-            data={allRows}
+            data={filteredData}
             isLoading={isLoading}
             pagination={{
               pageSize: 10,
