@@ -338,7 +338,7 @@ export default function TestAccountsTable() {
             </Button>
           </div>
           {searchError && (
-            <p className="text-muted-foreground text-sm">{searchError}</p>
+            <p className="text-destructive text-sm">{searchError}</p>
           )}
           {searchResult && (
             <div className="border rounded-md p-4 max-w-md space-y-2">
