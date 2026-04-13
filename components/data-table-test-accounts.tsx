@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react";
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import axios from "axios";
@@ -30,6 +33,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -62,7 +71,8 @@ export default function TestAccountsTable() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Create form state
+  // Create dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createEmail, setCreateEmail] = useState("");
   const [createPassword, setCreatePassword] = useState("");
   const [createName, setCreateName] = useState("");
@@ -71,11 +81,18 @@ export default function TestAccountsTable() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  // Search state
+  // Search / mark state
   const [searchEmail, setSearchEmail] = useState("");
   const [searchResult, setSearchResult] = useState<SearchedUser | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  // Filter + pagination state
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [roleFilter, setRoleFilter] = useState("");
+  const [curriculumFilter, setCurriculumFilter] = useState("");
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
   useEffect(() => {
     fetchAccounts();
@@ -122,6 +139,7 @@ export default function TestAccountsTable() {
       setCreateName("");
       setCreateRole("student");
       setCreateCurriculum("1");
+      setCreateDialogOpen(false);
     } catch (err) {
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -142,8 +160,7 @@ export default function TestAccountsTable() {
       );
       setSearchResult(res.data);
     } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response
-        ?.status;
+      const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 404) {
         setSearchError("No user found with that email");
       } else {
@@ -177,6 +194,29 @@ export default function TestAccountsTable() {
     }
   }
 
+  function handleGlobalFilterChange(value: string) {
+    setGlobalFilter(value);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }
+
+  function handleRoleFilterChange(value: string) {
+    setRoleFilter(value);
+    setColumnFilters((prev) => {
+      const others = prev.filter((f) => f.id !== "role");
+      return value ? [...others, { id: "role", value }] : others;
+    });
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }
+
+  function handleCurriculumFilterChange(value: string) {
+    setCurriculumFilter(value);
+    setColumnFilters((prev) => {
+      const others = prev.filter((f) => f.id !== "curriculum_id");
+      return value ? [...others, { id: "curriculum_id", value }] : others;
+    });
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }
+
   const columns: ColumnDef<TestAccount>[] = [
     {
       accessorKey: "name",
@@ -191,6 +231,8 @@ export default function TestAccountsTable() {
     {
       accessorKey: "role",
       header: "Role",
+      filterFn: (row, _id, filterValue) =>
+        String(row.original.role).toLowerCase() === String(filterValue).toLowerCase(),
       cell: ({ row }) => (
         <span className="capitalize">{String(row.original.role ?? "-")}</span>
       ),
@@ -198,10 +240,19 @@ export default function TestAccountsTable() {
     {
       accessorKey: "curriculum_id",
       header: "Curriculum",
+      filterFn: (row, _id, filterValue) => {
+        const label =
+          row.original.curriculum_id != null
+            ? curriculumLabel[row.original.curriculum_id] ??
+              String(row.original.curriculum_id)
+            : "-";
+        return label === String(filterValue);
+      },
       cell: ({ row }) => (
         <span>
           {row.original.curriculum_id != null
-            ? curriculumLabel[row.original.curriculum_id] ?? String(row.original.curriculum_id)
+            ? curriculumLabel[row.original.curriculum_id] ??
+              String(row.original.curriculum_id)
             : "-"}
         </span>
       ),
@@ -251,17 +302,114 @@ export default function TestAccountsTable() {
   const table = useReactTable({
     data: accounts,
     columns,
+    state: { globalFilter, columnFilters, pagination },
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const search = String(filterValue).toLowerCase();
+      return (
+        String(row.original.name ?? "").toLowerCase().includes(search) ||
+        String(row.original.email).toLowerCase().includes(search)
+      );
+    },
   });
 
   return (
-    <div className="p-6 space-y-10">
-      {/* Section 1: Test Accounts Table */}
+    <div className="p-6 space-y-6">
+      {/* Section 1: Mark Existing User — now at top */}
       <Card>
         <CardHeader>
-          <CardTitle>Test Accounts</CardTitle>
+          <CardTitle>Mark Existing User as Test Account</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2 max-w-md">
+            <Input
+              type="email"
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              placeholder="user@example.com"
+            />
+            <Button onClick={handleSearch} disabled={searchLoading || !searchEmail}>
+              {searchLoading ? "Searching..." : "Search"}
+            </Button>
+          </div>
+          {searchError && (
+            <p className="text-muted-foreground text-sm">{searchError}</p>
+          )}
+          {searchResult && (
+            <div className="border rounded-md p-4 max-w-md space-y-2">
+              <p className="font-medium">{String(searchResult.name)}</p>
+              <p className="text-sm text-muted-foreground">{String(searchResult.email)}</p>
+              <p className="text-sm capitalize">Role: {String(searchResult.role)}</p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm">Mark as Test Account</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Mark as test account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to mark{" "}
+                      <strong>{String(searchResult.name)}</strong> as a test account? They will
+                      be excluded from all reports.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleMarkAsTest(searchResult!)}>
+                      Mark as Test Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Section 2: Test Accounts Table with filters + pagination */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Test Accounts</CardTitle>
+          <Button onClick={() => setCreateDialogOpen(true)}>+ Create Test Account</Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3">
+            <Input
+              placeholder="Search name or email…"
+              value={globalFilter}
+              onChange={(e) => handleGlobalFilterChange(e.target.value)}
+              className="max-w-xs"
+            />
+            <select
+              value={roleFilter}
+              onChange={(e) => handleRoleFilterChange(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm bg-background"
+            >
+              <option value="">All Roles</option>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+            <select
+              value={curriculumFilter}
+              onChange={(e) => handleCurriculumFilterChange(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm bg-background"
+            >
+              <option value="">All Curricula</option>
+              <option value="IGCSE">IGCSE</option>
+              <option value="NC">NC</option>
+              <option value="REB">REB</option>
+              <option value="DRC">DRC</option>
+              <option value="YOUTH">YOUTH</option>
+            </select>
+          </div>
+
+          {/* Table */}
           {loading ? (
             <p className="text-muted-foreground text-sm">Loading...</p>
           ) : fetchError ? (
@@ -282,7 +430,10 @@ export default function TestAccountsTable() {
               <TableBody>
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="text-center text-muted-foreground"
+                    >
                       No test accounts found.
                     </TableCell>
                   </TableRow>
@@ -300,16 +451,40 @@ export default function TestAccountsTable() {
               </TableBody>
             </Table>
           )}
+
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              ← Prev
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {Math.max(table.getPageCount(), 1)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next →
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Section 2: Create Test Account */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Test Account</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreate} className="space-y-4 max-w-md">
+      {/* Create Test Account Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Test Account</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
               <Input
@@ -367,63 +542,21 @@ export default function TestAccountsTable() {
             {createError && (
               <p className="text-destructive text-sm">{createError}</p>
             )}
-            <Button type="submit" disabled={createLoading}>
-              {createLoading ? "Creating..." : "Create Test Account"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Section 3: Mark Existing User as Test Account */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mark Existing User as Test Account</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2 max-w-md">
-            <Input
-              type="email"
-              value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
-              placeholder="user@example.com"
-            />
-            <Button onClick={handleSearch} disabled={searchLoading || !searchEmail}>
-              {searchLoading ? "Searching..." : "Search"}
-            </Button>
-          </div>
-          {searchError && (
-            <p className="text-muted-foreground text-sm">{searchError}</p>
-          )}
-          {searchResult && (
-            <div className="border rounded-md p-4 max-w-md space-y-2">
-              <p className="font-medium">{String(searchResult.name)}</p>
-              <p className="text-sm text-muted-foreground">{String(searchResult.email)}</p>
-              <p className="text-sm capitalize">Role: {String(searchResult.role)}</p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button size="sm">Mark as Test Account</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Mark as test account?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to mark{" "}
-                      <strong>{String(searchResult.name)}</strong> as a test account? They will
-                      be excluded from all reports.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleMarkAsTest(searchResult!)}>
-                      Mark as Test Account
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCreateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createLoading}>
+                {createLoading ? "Creating..." : "Create"}
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
