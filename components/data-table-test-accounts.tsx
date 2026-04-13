@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -80,6 +81,10 @@ export default function TestAccountsTable() {
   const [createCurriculum, setCreateCurriculum] = useState("1");
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [createConfirm, setCreateConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
 
   // Search / mark state
   const [searchEmail, setSearchEmail] = useState("");
@@ -124,6 +129,11 @@ export default function TestAccountsTable() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreateError(null);
+    if (createPassword !== createConfirm) {
+      setConfirmError("Passwords do not match");
+      return;
+    }
+    setConfirmError(null);
     setCreateLoading(true);
     try {
       const res = await axios.post<TestAccount>(`${API_URL}/api/test-accounts`, {
@@ -136,9 +146,13 @@ export default function TestAccountsTable() {
       setAccounts((prev) => [res.data, ...prev]);
       setCreateEmail("");
       setCreatePassword("");
+      setCreateConfirm("");
       setCreateName("");
       setCreateRole("student");
       setCreateCurriculum("1");
+      setShowPassword(false);
+      setShowConfirm(false);
+      setConfirmError(null);
       setCreateDialogOpen(false);
     } catch (err) {
       const message =
@@ -497,13 +511,45 @@ export default function TestAccountsTable() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Password</label>
-              <Input
-                type="password"
-                value={createPassword}
-                onChange={(e) => setCreatePassword(e.target.value)}
-                placeholder="Password"
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={createPassword}
+                  onChange={(e) => { setCreatePassword(e.target.value); setConfirmError(null); }}
+                  placeholder="Password"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Confirm Password</label>
+              <div className="relative">
+                <Input
+                  type={showConfirm ? "text" : "password"}
+                  value={createConfirm}
+                  onChange={(e) => { setCreateConfirm(e.target.value); setConfirmError(null); }}
+                  placeholder="Confirm password"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Name</label>
@@ -539,6 +585,9 @@ export default function TestAccountsTable() {
                 <option value="5">YOUTH</option>
               </select>
             </div>
+            {confirmError && (
+              <p className="text-destructive text-sm">{confirmError}</p>
+            )}
             {createError && (
               <p className="text-destructive text-sm">{createError}</p>
             )}
