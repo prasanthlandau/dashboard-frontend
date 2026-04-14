@@ -71,7 +71,7 @@ const menuItems: NavItem[] = [
   },
   { path: "/dashboard/zero", icon: AlertTriangle, label: "User With Zero WT" },
   { path: "/dashboard/chat", icon: Bot, label: "AI Chat" },
-  { path: "/dashboard/test-accounts", icon: FlaskConical, label: "Test Accounts" },
+  // { path: "/dashboard/test-accounts", icon: FlaskConical, label: "Test Accounts" },
 ];
 
 const Sidebar = () => {
