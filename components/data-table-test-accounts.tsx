@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { Eye, EyeOff } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 interface TestAccount {
   id: string;
@@ -106,7 +106,7 @@ export default function TestAccountsTable() {
     try {
       setLoading(true);
       const res = await axios.get<TestAccount[]>(
-        `${API_URL}/api/test-accounts`,
+        `${API_BASE_URL}/api/test-accounts`,
       );
       setAccounts(res.data);
     } catch {
@@ -118,7 +118,7 @@ export default function TestAccountsTable() {
 
   async function handleUnmark(account: TestAccount) {
     try {
-      await axios.patch(`${API_URL}/api/test-accounts/${account.id}`, {
+      await axios.patch(`${API_BASE_URL}/api/test-accounts/${account.id}`, {
         is_testaccount: false,
       });
       setAccounts((prev) => prev.filter((a) => a.id !== account.id));
@@ -138,7 +138,7 @@ export default function TestAccountsTable() {
     setCreateLoading(true);
     try {
       const res = await axios.post<TestAccount>(
-        `${API_URL}/api/test-accounts`,
+        `${API_BASE_URL}/api/test-accounts`,
         {
           email: createEmail,
           password: createPassword,
@@ -176,7 +176,7 @@ export default function TestAccountsTable() {
     setSearchLoading(true);
     try {
       const res = await axios.get<SearchedUser>(
-        `${API_URL}/api/test-accounts/search?email=${encodeURIComponent(searchEmail)}`,
+        `${API_BASE_URL}/api/test-accounts/search?email=${encodeURIComponent(searchEmail)}`,
       );
       setSearchResult(res.data);
     } catch (err) {
@@ -194,7 +194,7 @@ export default function TestAccountsTable() {
 
   async function handleMarkAsTest(user: SearchedUser) {
     try {
-      await axios.patch(`${API_URL}/api/test-accounts/${user.id}`, {
+      await axios.patch(`${API_BASE_URL}/api/test-accounts/${user.id}`, {
         is_testaccount: true,
       });
       setAccounts((prev) => [
