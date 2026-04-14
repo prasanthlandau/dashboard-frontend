@@ -61,10 +61,8 @@ interface SearchedUser {
 
 const curriculumLabel: Record<number, string> = {
   1: "IGCSE",
-  2: "NC",
-  3: "REB",
-  4: "DRC",
-  5: "YOUTH",
+  2: "Azerbaijani Curriculum",
+  5: "Youth Courses (AZ)",
 };
 
 export default function TestAccountsTable() {
@@ -79,6 +77,7 @@ export default function TestAccountsTable() {
   const [createName, setCreateName] = useState("");
   const [createRole, setCreateRole] = useState("student");
   const [createCurriculum, setCreateCurriculum] = useState("1");
+  const [createGrade, setCreateGrade] = useState("1");
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createConfirm, setCreateConfirm] = useState("");
@@ -106,7 +105,9 @@ export default function TestAccountsTable() {
   async function fetchAccounts() {
     try {
       setLoading(true);
-      const res = await axios.get<TestAccount[]>(`${API_URL}/api/test-accounts`);
+      const res = await axios.get<TestAccount[]>(
+        `${API_URL}/api/test-accounts`,
+      );
       setAccounts(res.data);
     } catch {
       setFetchError("Failed to load test accounts");
@@ -136,13 +137,17 @@ export default function TestAccountsTable() {
     setConfirmError(null);
     setCreateLoading(true);
     try {
-      const res = await axios.post<TestAccount>(`${API_URL}/api/test-accounts`, {
-        email: createEmail,
-        password: createPassword,
-        name: createName,
-        role: createRole,
-        curriculum: Number(createCurriculum),
-      });
+      const res = await axios.post<TestAccount>(
+        `${API_URL}/api/test-accounts`,
+        {
+          email: createEmail,
+          password: createPassword,
+          name: createName,
+          role: createRole,
+          curriculum: Number(createCurriculum),
+          grade: createRole === "student" ? Number(createGrade) : undefined,
+        },
+      );
       setAccounts((prev) => [res.data, ...prev]);
       setCreateEmail("");
       setCreatePassword("");
@@ -150,6 +155,7 @@ export default function TestAccountsTable() {
       setCreateName("");
       setCreateRole("student");
       setCreateCurriculum("1");
+      setCreateGrade("1");
       setShowPassword(false);
       setShowConfirm(false);
       setConfirmError(null);
@@ -170,11 +176,12 @@ export default function TestAccountsTable() {
     setSearchLoading(true);
     try {
       const res = await axios.get<SearchedUser>(
-        `${API_URL}/api/test-accounts/search?email=${encodeURIComponent(searchEmail)}`
+        `${API_URL}/api/test-accounts/search?email=${encodeURIComponent(searchEmail)}`,
       );
       setSearchResult(res.data);
     } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
       if (status === 404) {
         setSearchError("No user found with that email");
       } else {
@@ -246,7 +253,8 @@ export default function TestAccountsTable() {
       accessorKey: "role",
       header: "Role",
       filterFn: (row, _id, filterValue) =>
-        String(row.original.role).toLowerCase() === String(filterValue).toLowerCase(),
+        String(row.original.role).toLowerCase() ===
+        String(filterValue).toLowerCase(),
       cell: ({ row }) => (
         <span className="capitalize">{String(row.original.role ?? "-")}</span>
       ),
@@ -257,16 +265,16 @@ export default function TestAccountsTable() {
       filterFn: (row, _id, filterValue) => {
         const label =
           row.original.curriculum_id != null
-            ? curriculumLabel[row.original.curriculum_id] ??
-              String(row.original.curriculum_id)
+            ? (curriculumLabel[row.original.curriculum_id] ??
+              String(row.original.curriculum_id))
             : "-";
         return label === String(filterValue);
       },
       cell: ({ row }) => (
         <span>
           {row.original.curriculum_id != null
-            ? curriculumLabel[row.original.curriculum_id] ??
-              String(row.original.curriculum_id)
+            ? (curriculumLabel[row.original.curriculum_id] ??
+              String(row.original.curriculum_id))
             : "-"}
         </span>
       ),
@@ -289,7 +297,7 @@ export default function TestAccountsTable() {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline" size="sm">
-              Unmark
+              Remove
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -297,8 +305,11 @@ export default function TestAccountsTable() {
               <AlertDialogTitle>Convert to regular account?</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to convert{" "}
-                <strong>{String(row.original.name ?? row.original.email)}</strong> back to a
-                regular account? They will appear in all reports again.
+                <strong>
+                  {String(row.original.name ?? row.original.email)}
+                </strong>{" "}
+                back to a regular account? They will appear in all reports
+                again.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -326,7 +337,9 @@ export default function TestAccountsTable() {
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = String(filterValue).toLowerCase();
       return (
-        String(row.original.name ?? "").toLowerCase().includes(search) ||
+        String(row.original.name ?? "")
+          .toLowerCase()
+          .includes(search) ||
         String(row.original.email).toLowerCase().includes(search)
       );
     },
@@ -347,7 +360,10 @@ export default function TestAccountsTable() {
               onChange={(e) => setSearchEmail(e.target.value)}
               placeholder="user@example.com"
             />
-            <Button onClick={handleSearch} disabled={searchLoading || !searchEmail}>
+            <Button
+              onClick={handleSearch}
+              disabled={searchLoading || !searchEmail}
+            >
               {searchLoading ? "Searching..." : "Search"}
             </Button>
           </div>
@@ -357,8 +373,12 @@ export default function TestAccountsTable() {
           {searchResult && (
             <div className="border rounded-md p-4 max-w-md space-y-2">
               <p className="font-medium">{String(searchResult.name)}</p>
-              <p className="text-sm text-muted-foreground">{String(searchResult.email)}</p>
-              <p className="text-sm capitalize">Role: {String(searchResult.role)}</p>
+              <p className="text-sm text-muted-foreground">
+                {String(searchResult.email)}
+              </p>
+              <p className="text-sm capitalize">
+                Role: {String(searchResult.role)}
+              </p>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="sm">Mark as Test Account</Button>
@@ -368,13 +388,15 @@ export default function TestAccountsTable() {
                     <AlertDialogTitle>Mark as test account?</AlertDialogTitle>
                     <AlertDialogDescription>
                       Are you sure you want to mark{" "}
-                      <strong>{String(searchResult.name)}</strong> as a test account? They will
-                      be excluded from all reports.
+                      <strong>{String(searchResult.name)}</strong> as a test
+                      account? They will be excluded from all reports.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleMarkAsTest(searchResult!)}>
+                    <AlertDialogAction
+                      onClick={() => handleMarkAsTest(searchResult!)}
+                    >
                       Mark as Test Account
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -389,7 +411,9 @@ export default function TestAccountsTable() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Test Accounts</CardTitle>
-          <Button onClick={() => setCreateDialogOpen(true)}>+ Create Test Account</Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            + Create Test Account
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters */}
@@ -414,12 +438,12 @@ export default function TestAccountsTable() {
               onChange={(e) => handleCurriculumFilterChange(e.target.value)}
               className="border rounded-md px-3 py-2 text-sm bg-background"
             >
-              <option value="">All Curricula</option>
+              <option value="">All Curriculam</option>
               <option value="IGCSE">IGCSE</option>
-              <option value="NC">NC</option>
-              <option value="REB">REB</option>
-              <option value="DRC">DRC</option>
-              <option value="YOUTH">YOUTH</option>
+              <option value="Azerbaijani Curriculum">
+                Azerbaijani Curriculum
+              </option>
+              <option value="Youth Courses (AZ)">Youth Courses (AZ)</option>
             </select>
           </div>
 
@@ -435,7 +459,10 @@ export default function TestAccountsTable() {
                   <TableRow key={hg.id}>
                     {hg.headers.map((header) => (
                       <TableHead key={header.id}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -456,7 +483,10 @@ export default function TestAccountsTable() {
                     <TableRow key={row.id}>
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -515,7 +545,10 @@ export default function TestAccountsTable() {
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={createPassword}
-                  onChange={(e) => { setCreatePassword(e.target.value); setConfirmError(null); }}
+                  onChange={(e) => {
+                    setCreatePassword(e.target.value);
+                    setConfirmError(null);
+                  }}
                   placeholder="Password"
                   className="pr-10"
                   required
@@ -526,17 +559,26 @@ export default function TestAccountsTable() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Confirm Password</label>
+              <label className="block text-sm font-medium mb-1">
+                Confirm Password
+              </label>
               <div className="relative">
                 <Input
                   type={showConfirm ? "text" : "password"}
                   value={createConfirm}
-                  onChange={(e) => { setCreateConfirm(e.target.value); setConfirmError(null); }}
+                  onChange={(e) => {
+                    setCreateConfirm(e.target.value);
+                    setConfirmError(null);
+                  }}
                   placeholder="Confirm password"
                   className="pr-10"
                   required
@@ -547,7 +589,11 @@ export default function TestAccountsTable() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   tabIndex={-1}
                 >
-                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirm ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -572,19 +618,35 @@ export default function TestAccountsTable() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Curriculum</label>
+              <label className="block text-sm font-medium mb-1">
+                Curriculum
+              </label>
               <select
                 value={createCurriculum}
                 onChange={(e) => setCreateCurriculum(e.target.value)}
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background"
               >
                 <option value="1">IGCSE</option>
-                <option value="2">NC</option>
-                <option value="3">REB</option>
-                <option value="4">DRC</option>
-                <option value="5">YOUTH</option>
+                <option value="2">Azerbaijani Curriculum</option>
+                <option value="5">Youth Courses (AZ)</option>
               </select>
             </div>
+            {createRole === "student" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Grade</label>
+                <select
+                  value={createGrade}
+                  onChange={(e) => setCreateGrade(e.target.value)}
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                >
+                  {Array.from({ length: 11 }, (_, i) => i + 1).map((g) => (
+                    <option key={g} value={String(g)}>
+                      Grade {g}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {confirmError && (
               <p className="text-destructive text-sm">{confirmError}</p>
             )}
