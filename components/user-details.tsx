@@ -100,7 +100,7 @@ const UserDetailsDialog = ({ open, onClose, userId }: UserDetailsProps) => {
           )}
           {userData && (
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <DetailItem label="Email" value={userData.email} />
+              <DetailItem label="Email / Phone" value={userData.email} />
               <DetailItem label="User Type" value={userData.user_type} />
               <DetailItem label="Status" value={userData.status} />
               <DetailItem label="Profile Count" value={userData.profile_count} />

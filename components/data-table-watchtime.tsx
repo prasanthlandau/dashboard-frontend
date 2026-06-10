@@ -170,7 +170,7 @@ const DataTableWatchtime = () => {
   const columns: ColumnDef<WatchtimeRow>[] = [
     {
       accessorKey: "email",
-      header: "Email",
+      header: "Email / Phone",
       enableSorting: true,
       enableHiding: true,
     },
@@ -303,7 +303,7 @@ const DataTableWatchtime = () => {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Filter emails..."
+                  placeholder="Filter email / phone..."
                   value={
                     (columnFilters.find((f) => f.id === "email")
                       ?.value as string) || ""
@@ -446,7 +446,7 @@ const DataTableWatchtime = () => {
                   >
                     <span className="capitalize">
                       {filter.id === "email"
-                        ? "Email"
+                        ? "Email / Phone"
                         : filter.id === "user_type"
                         ? "User Type"
                         : filter.id === "user_join"

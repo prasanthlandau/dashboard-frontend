@@ -39,7 +39,7 @@ interface UserRow {
   status: "Active" | "Not verified";
   created_at: string;
   curriculum: string;
-  user_join: "Manual" | "Self";
+  user_join: "Manual" | "Self" | "DS";
 }
 
 const statusIconMap: Record<UserRow["status"], JSX.Element> = {
@@ -50,6 +50,7 @@ const statusIconMap: Record<UserRow["status"], JSX.Element> = {
 const onboardingIconMap: Record<UserRow["user_join"], JSX.Element> = {
   Manual: <FiUser className="text-blue-500" />,
   Self: <FiUser className="text-orange-500" />,
+  DS: <FiUser className="text-green-500" />,
 };
 
 const userTypeIconMap: Record<UserRow["user_type"], JSX.Element> = {
@@ -76,6 +77,10 @@ const StatusAndOnboardingLegend = () => (
       <span>Self Onboard</span>
     </div>
     <div className="flex items-center gap-2 text-sm">
+      <FiUser className="h-4 w-4 text-green-500" />
+      <span>DS Onboard</span>
+    </div>
+    <div className="flex items-center gap-2 text-sm">
       <FiUsers className="h-4 w-4 text-green-500" />
       <span>Student</span>
     </div>
@@ -96,17 +101,19 @@ const DataSummary = ({ data }: { data: UserRow[] }) => {
       pendingUsers: data.filter((user) => user.status === "Not verified")
         .length,
       manualUsers: data.filter((user) => user.user_join === "Manual").length,
+      dsUsers: data.filter((user) => user.user_join === "DS").length,
     }),
     [data]
   );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-6">
       <MetricCard title="Total Users" value={stats.totalUsers} />
       <MetricCard title="Students" value={stats.students} />
       <MetricCard title="Teachers" value={stats.teachers} />
       <MetricCard title="Verified Users" value={stats.activeUsers} />
       <MetricCard title="Manual Onboard" value={stats.manualUsers} />
+      <MetricCard title="DS Onboard" value={stats.dsUsers} />
       <MetricCard title="Not Verified" value={stats.pendingUsers} />
     </div>
   );
@@ -169,7 +176,7 @@ const DataTableUsers = () => {
   const columns: ColumnDef<UserRow>[] = [
     {
       accessorKey: "email",
-      header: "Email",
+      header: "Email / Phone",
       enableSorting: true,
       enableHiding: true,
     },
@@ -350,7 +357,7 @@ const DataTableUsers = () => {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Filter emails..."
+                  placeholder="Filter email / phone..."
                   value={
                     (columnFilters.find((f) => f.id === "email")
                       ?.value as string) || ""
@@ -473,6 +480,7 @@ const DataTableUsers = () => {
                           <option value="">All</option>
                           <option value="Manual">Manual</option>
                           <option value="Self">Self</option>
+                          <option value="DS">DS</option>
                         </select>
                       </div>
                     </div>
@@ -525,7 +533,7 @@ const DataTableUsers = () => {
                   >
                     <span className="capitalize">
                       {filter.id === "email"
-                        ? "Email"
+                        ? "Email / Phone"
                         : filter.id === "user_type"
                         ? "User Type"
                         : filter.id === "status"

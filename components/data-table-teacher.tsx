@@ -122,7 +122,7 @@ const DataTableTeacher: React.FC = () => {
     },
     {
       accessorKey: "teacher_email",
-      header: "Email",
+      header: "Email / Phone",
       enableSorting: true,
       enableHiding: true,
     },
@@ -251,7 +251,7 @@ const DataTableTeacher: React.FC = () => {
                       <div>
                         <p className="text-sm font-medium mb-1">Email</p>
                         <Input
-                          placeholder="Filter by email"
+                          placeholder="Filter by email / phone"
                           value={
                             (columnFilters.find((f) => f.id === "teacher_email")
                               ?.value as string) || ""
@@ -326,7 +326,7 @@ const DataTableTeacher: React.FC = () => {
                       {filter.id === "teacher_name"
                         ? "Teacher"
                         : filter.id === "teacher_email"
-                        ? "Email"
+                        ? "Email / Phone"
                         : filter.id}
                       :
                     </span>
