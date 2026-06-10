@@ -36,6 +36,7 @@ import {
 
 interface WatchtimeRow {
   id: string | number;
+  name: string;
   email: string;
   user_type: "Student" | "Teacher";
   user_join: "Manual" | "Self";
@@ -168,6 +169,12 @@ const DataTableWatchtime = () => {
   };
 
   const columns: ColumnDef<WatchtimeRow>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      enableSorting: true,
+      enableHiding: true,
+    },
     {
       accessorKey: "email",
       header: "Email / Phone",
