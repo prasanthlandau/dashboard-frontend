@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Eye, EyeOff } from "lucide-react";
+import BulkUploadDialog from "@/components/bulk-upload-test-accounts-dialog";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
@@ -90,6 +91,7 @@ export default function TestAccountsTable() {
   const [searchResult, setSearchResult] = useState<SearchedUser | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
 
   // Filter + pagination state
   const [globalFilter, setGlobalFilter] = useState("");
@@ -365,6 +367,9 @@ export default function TestAccountsTable() {
               disabled={searchLoading || !searchEmail}
             >
               {searchLoading ? "Searching..." : "Search"}
+            </Button>
+            <Button variant="outline" onClick={() => setBulkDialogOpen(true)}>
+              Bulk Upload
             </Button>
           </div>
           {searchError && (
@@ -668,6 +673,12 @@ export default function TestAccountsTable() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <BulkUploadDialog
+        open={bulkDialogOpen}
+        onOpenChange={setBulkDialogOpen}
+        onComplete={fetchAccounts}
+      />
     </div>
   );
 }
